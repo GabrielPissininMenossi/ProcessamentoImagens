@@ -69,5 +69,13 @@ namespace ProcessamentoImagens
             Filtros.negativoDMA(imageBitmap, imgDest);
             pictBoxImg2.Image = imgDest;
         }
+
+        private void btnEsqueletizar_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image);
+            imageBitmap = (Bitmap)image;
+            Filtros.esqueletizarDMA(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
+        }
     }
 }
