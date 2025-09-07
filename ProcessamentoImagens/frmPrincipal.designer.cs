@@ -37,7 +37,8 @@
             this.btnLuminanciaComDMA = new System.Windows.Forms.Button();
             this.btnNegativoComDMA = new System.Windows.Forms.Button();
             this.btnNegativoSemDMA = new System.Windows.Forms.Button();
-            this.btnEsqueletizar = new System.Windows.Forms.Button();
+            this.btnEsqueletizarComDMA = new System.Windows.Forms.Button();
+            this.btnBorda = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictBoxImg1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictBoxImg2)).BeginInit();
             this.SuspendLayout();
@@ -120,22 +121,33 @@
             this.btnNegativoSemDMA.UseVisualStyleBackColor = true;
             this.btnNegativoSemDMA.Click += new System.EventHandler(this.btnNegativoSemDMA_Click);
             // 
-            // btnEsqueletizar
+            // btnEsqueletizarComDMA
             // 
-            this.btnEsqueletizar.Location = new System.Drawing.Point(647, 512);
-            this.btnEsqueletizar.Name = "btnEsqueletizar";
-            this.btnEsqueletizar.Size = new System.Drawing.Size(208, 23);
-            this.btnEsqueletizar.TabIndex = 112;
-            this.btnEsqueletizar.Text = "Esqueletizar";
-            this.btnEsqueletizar.UseVisualStyleBackColor = true;
-            this.btnEsqueletizar.Click += new System.EventHandler(this.btnTeste_Click);
+            this.btnEsqueletizarComDMA.Location = new System.Drawing.Point(647, 512);
+            this.btnEsqueletizarComDMA.Name = "btnEsqueletizarComDMA";
+            this.btnEsqueletizarComDMA.Size = new System.Drawing.Size(208, 23);
+            this.btnEsqueletizarComDMA.TabIndex = 112;
+            this.btnEsqueletizarComDMA.Text = "Esqueletizar";
+            this.btnEsqueletizarComDMA.UseVisualStyleBackColor = true;
+            this.btnEsqueletizarComDMA.Click += new System.EventHandler(this.btnEsqueletizarComDMA_Click);
+            // 
+            // btnBorda
+            // 
+            this.btnBorda.Location = new System.Drawing.Point(647, 541);
+            this.btnBorda.Name = "btnBorda";
+            this.btnBorda.Size = new System.Drawing.Size(208, 23);
+            this.btnBorda.TabIndex = 113;
+            this.btnBorda.Text = "Borda e Retangulo";
+            this.btnBorda.UseVisualStyleBackColor = true;
+            this.btnBorda.Click += new System.EventHandler(this.btnBordaComDMA_Click);
             // 
             // frmPrincipal
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1220, 608);
-            this.Controls.Add(this.btnEsqueletizar);
+            this.Controls.Add(this.btnBorda);
+            this.Controls.Add(this.btnEsqueletizarComDMA);
             this.Controls.Add(this.btnNegativoComDMA);
             this.Controls.Add(this.btnNegativoSemDMA);
             this.Controls.Add(this.btnLuminanciaComDMA);
@@ -164,7 +176,8 @@
         private System.Windows.Forms.Button btnLuminanciaComDMA;
         private System.Windows.Forms.Button btnNegativoComDMA;
         private System.Windows.Forms.Button btnNegativoSemDMA;
-        private System.Windows.Forms.Button btnEsqueletizar;
+        private System.Windows.Forms.Button btnEsqueletizarComDMA;
+        private System.Windows.Forms.Button btnBorda;
     }
 }
 

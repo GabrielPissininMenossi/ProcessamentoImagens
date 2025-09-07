@@ -70,11 +70,22 @@ namespace ProcessamentoImagens
             pictBoxImg2.Image = imgDest;
         }
 
-        private void btnEsqueletizar_Click(object sender, EventArgs e)
+        private void btnEsqueletizarComDMA_Click(object sender, EventArgs e)
         {
             Bitmap imgDest = new Bitmap(image);
             imageBitmap = (Bitmap)image;
-            Filtros.esqueletizarDMA(imageBitmap, imgDest);
+            Filtros.EsqueletizarDMA(imageBitmap, imgDest);
+            //imgDest = imageBitmap;
+            pictBoxImg1.Image = imageBitmap;
+            pictBoxImg2.Image = imgDest;
+        }
+
+        private void btnBordaComDMA_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image);
+            imageBitmap = (Bitmap)image;
+            Filtros.BordaDMA(imageBitmap, imgDest);
+            pictBoxImg1.Image = imageBitmap;
             pictBoxImg2.Image = imgDest;
         }
     }
