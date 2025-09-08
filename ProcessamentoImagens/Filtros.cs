@@ -504,8 +504,52 @@ namespace ProcessamentoImagens
             imageBitmapDest.UnlockBits(bitmapDataDst);
         }
 
-        private static void BordaDMA(Bitmap imageBitmapSrc, Bitmap imageBitmapDest)
+        private static unsafe Boolean DireitaIsPreto(byte* pixelAtual)
         {
+            byte* direita = pixelAtual + 3;
+            if (direita[0]==0 && direita[1]==0 && direita[2]==0)
+                return true;
+            return false;
+        }
+
+        private static unsafe int AcharVizinho(byte* p0, byte* p1, byte* p2, byte* p3, byte* p4, byte* p5, byte* p6, byte* p7)
+        {
+            if (p0 != null && !Marcado(p0) && p0[0] * p0[1] * p0[2] == 0)
+                return 0;
+            if (p1 != null && !Marcado(p1) && p1[0] * p1[1] * p1[2] == 0)
+                return 1;
+            if (p2 != null && !Marcado(p2) && p2[0] * p2[1] * p2[2] == 0)
+                return 2;
+            if (p3 != null && !Marcado(p3) && p3[0] * p3[1] * p3[2] == 0)
+                return 3;
+            if (p4 != null && !Marcado(p4) && p4[0] * p4[1] * p4[2] == 0)
+                return 4;
+            if (p5 != null && !Marcado(p5) && p5[0] * p5[1] * p5[2] == 0)
+                return 5;
+            if (p6 != null && !Marcado(p6) && p6[0] * p6[1] * p6[2] == 0)
+                return 6;
+            if (p7 != null && !Marcado(p7) && p7[0] * p7[1] * p7[2] == 0)
+                return 7;
+            return -1;
+        }
+
+        private static unsafe void MarcarPixel(byte* pixel)
+        {
+            //o meu pixel ficará marcado como vermelho
+            pixel[0] = 0; //b
+            pixel[1] = 0; //g
+            pixel[2] = 255; //r
+        }
+
+        private static unsafe Boolean Marcado(byte* pixel)
+        {
+            //retorna true se o pixel é inteiramente vermelho
+            return pixel[0] == 0 && pixel[1] == 0 && pixel[2] == 255;
+        }
+
+        public static void BordaDMA(Bitmap imageBitmapSrc, Bitmap imageBitmapDest)
+        {
+            int numVizinho;
             int width = imageBitmapSrc.Width;
             int height = imageBitmapSrc.Height;
             int[] x1, x2, y1, y2; //vão ser os vetores para guardar as coordenadas dos retangulos
@@ -518,7 +562,115 @@ namespace ProcessamentoImagens
             BitmapData bitmapDataSrc = imageBitmapSrc.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
             BitmapData bitmapDataDst = imageBitmapDest.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
 
+            unsafe
+            {
+                //definindo os ponteiros para o inicio de cada imagem
+                byte* src = (byte*)bitmapDataSrc.Scan0.ToPointer();
+                byte* dst = (byte*)bitmapDataDst.Scan0.ToPointer();
+                byte* p0, p1, p2, p3, p4, p5, p6, p7, auxSrc, auxDst;
 
+                for (int x = 0; x < height; x++)
+                {
+                    for (int y = 0; y < width; y++)
+                    {
+                        auxSrc = src + x * bitmapDataSrc.Stride + y * 3;
+                        if (!Marcado(auxSrc) && DireitaIsPreto(auxSrc)) //se verdade, então aqui eu começo de fato a traçar a borda
+                        {
+                            p0 = GetP4(x, y, width, height, 3, bitmapDataSrc.Stride, src); //pixel à direita
+                            p1 = GetP3(x, y, width, height, 3, bitmapDataSrc.Stride, src); //pixel acima à direita
+                            p2 = GetP2(x, y, width, height, 3, bitmapDataSrc.Stride, src); //pixel acima
+                            p3 = GetP9(x, y, width, height, 3, bitmapDataSrc.Stride, src); //pixel acima à esquerda
+                            p4 = GetP8(x, y, width, height, 3, bitmapDataSrc.Stride, src); //pixel à esquerda
+                            p5 = GetP7(x, y, width, height, 3, bitmapDataSrc.Stride, src); //pixel abaixo à esquerda
+                            p6 = GetP6(x, y, width, height, 3, bitmapDataSrc.Stride, src); //pixel abaixo
+                            p7 = GetP5(x, y, width, height, 3, bitmapDataSrc.Stride, src); //pixel abaixo à direita
+
+                            numVizinho = AcharVizinho(p0, p1, p2, p3, p4, p5, p6, p7);
+                            while(numVizinho > -1)// posso continuar o algoritmo pois achei um vizinho para andar
+                            {
+                                //marca o pixel atual como que já passei por ele
+                                MarcarPixel(auxSrc);
+
+                                //vai para o vizinho
+                                switch (numVizinho)
+                                {
+                                    case 0:
+                                        {
+                                            auxSrc = p0;
+                                            break;
+                                        }
+                                    case 1:
+                                        {
+                                            auxSrc = p1;
+                                            break;
+                                        }
+                                    case 2:
+                                        {
+                                            auxSrc = p2;
+                                            break;
+                                        }
+                                    case 3:
+                                        {
+                                            auxSrc = p3;
+                                            break;
+                                        }
+                                    case 4:
+                                        {
+                                            auxSrc = p4;
+                                            break;
+                                        }
+                                    case 5:
+                                        {
+                                            auxSrc = p5;
+                                            break;
+                                        }
+                                    case 6:
+                                        {
+                                            auxSrc = p6;
+                                            break;
+                                        }
+                                    case 7:
+                                        {
+                                            auxSrc = p7;
+                                            break;
+                                        }
+                                }
+
+                                p0 = GetP4(x, y, width, height, 3, bitmapDataSrc.Stride, src); //pixel à direita
+                                p1 = GetP3(x, y, width, height, 3, bitmapDataSrc.Stride, src); //pixel acima à direita
+                                p2 = GetP2(x, y, width, height, 3, bitmapDataSrc.Stride, src); //pixel acima
+                                p3 = GetP9(x, y, width, height, 3, bitmapDataSrc.Stride, src); //pixel acima à esquerda
+                                p4 = GetP8(x, y, width, height, 3, bitmapDataSrc.Stride, src); //pixel à esquerda
+                                p5 = GetP7(x, y, width, height, 3, bitmapDataSrc.Stride, src); //pixel abaixo à esquerda
+                                p6 = GetP6(x, y, width, height, 3, bitmapDataSrc.Stride, src); //pixel abaixo
+                                p7 = GetP5(x, y, width, height, 3, bitmapDataSrc.Stride, src); //pixel abaixo à direita
+                                numVizinho = AcharVizinho(p0, p1, p2, p3, p4, p5, p6, p7);
+                            }
+                        }
+                    }
+                }
+
+                //os pixels que não foram marcados recebem branco, e os marcados agora serão pretos (borda)
+                for(int x=0; x<height; x++)
+                {
+                    for(int y=0; y<width; y++)
+                    {
+                        auxSrc = src + x * bitmapDataSrc.Stride + y * 3;
+                        if (!Marcado(auxSrc))
+                        {
+                            auxSrc[0] = 255;
+                            auxSrc[1] = 255;
+                            auxSrc[2] = 255;
+                        }
+                        else
+                        {
+                            auxSrc[0] = 0;
+                            auxSrc[1] = 0;
+                            auxSrc[2] = 0;
+                        }
+                    }
+                }
+            }
 
             //destrava a região de memória
             //unlock imagem origem
