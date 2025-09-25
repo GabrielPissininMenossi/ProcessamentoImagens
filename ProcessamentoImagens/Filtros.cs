@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Net.NetworkInformation;
+using System.Runtime.ConstrainedExecution;
+using System.Text;
+using System.Windows.Forms;
 
 namespace ProcessamentoImagens
 {
@@ -103,6 +105,158 @@ namespace ProcessamentoImagens
             }
             return null;
         }
+
+
+        //sem acesso direto a memoria
+        public static void convert_to_gray(Bitmap imageBitmapSrc, Bitmap imageBitmapDest)
+        {
+            int width = imageBitmapSrc.Width;
+            int height = imageBitmapSrc.Height;
+            int r, g, b;
+            Int32 gs;
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    //obtendo a cor do pixel
+                    Color cor = imageBitmapSrc.GetPixel(x, y);
+
+                    r = cor.R;
+                    g = cor.G;
+                    b = cor.B;
+
+                    gs = (Int32)(r * 0.2990 + g * 0.5870 + b * 0.1140);
+
+                    //nova cor
+                    Color newcolor = Color.FromArgb(gs, gs, gs);
+
+                    imageBitmapDest.SetPixel(x, y, newcolor);
+                }
+            }
+        }
+
+        //sem acesso direito a memoria
+        public static void negativo(Bitmap imageBitmapSrc, Bitmap imageBitmapDest)
+        {
+            int width = imageBitmapSrc.Width;
+            int height = imageBitmapSrc.Height;
+            int r, g, b;
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    //obtendo a cor do pixel
+                    Color cor = imageBitmapSrc.GetPixel(x, y);
+
+                    r = cor.R;
+                    g = cor.G;
+                    b = cor.B;
+
+                    //nova cor
+                    Color newcolor = Color.FromArgb(255 - r, 255 - g, 255 - b);
+
+                    imageBitmapDest.SetPixel(x, y, newcolor);
+                }
+            }
+        }
+
+        //com acesso direto a memória
+        public static void convert_to_grayDMA(Bitmap imageBitmapSrc, Bitmap imageBitmapDest)
+        {
+            int width = imageBitmapSrc.Width;
+            int height = imageBitmapSrc.Height;
+            int pixelSize = 3;
+            Int32 gs;
+
+            //lock dados bitmap origem
+            BitmapData bitmapDataSrc = imageBitmapSrc.LockBits(new Rectangle(0, 0, width, height),
+                ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            //lock dados bitmap destino
+            BitmapData bitmapDataDst = imageBitmapDest.LockBits(new Rectangle(0, 0, width, height),
+                ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+            int padding = bitmapDataSrc.Stride - (width * pixelSize);
+
+            unsafe
+            {
+                byte* src = (byte*)bitmapDataSrc.Scan0.ToPointer();
+                byte* dst = (byte*)bitmapDataDst.Scan0.ToPointer();
+
+                int r, g, b;
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        b = *(src++); //está armazenado dessa forma: b g r
+                        g = *(src++);
+                        r = *(src++);
+                        gs = (Int32)(r * 0.2990 + g * 0.5870 + b * 0.1140);
+                        *(dst++) = (byte)gs;
+                        *(dst++) = (byte)gs;
+                        *(dst++) = (byte)gs;
+                    }
+                    src += padding;
+                    dst += padding;
+                }
+            }
+            //unlock imagem origem
+            imageBitmapSrc.UnlockBits(bitmapDataSrc);
+            //unlock imagem destino
+            imageBitmapDest.UnlockBits(bitmapDataDst);
+        }
+
+        //com acesso direito a memoria
+        public static void negativoDMA(Bitmap imageBitmapSrc, Bitmap imageBitmapDest)
+        {
+            int width = imageBitmapSrc.Width;//quant. pixels
+            int height = imageBitmapSrc.Height;//quant. pixels
+            int pixelSize = 3; //número de bytes por pixel
+
+            //lock dados bitmap origem 
+            BitmapData bitmapDataSrc = imageBitmapSrc.LockBits(new Rectangle(0, 0, width, height),
+                ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            //lock dados bitmap destino
+            BitmapData bitmapDataDst = imageBitmapDest.LockBits(new Rectangle(0, 0, width, height),
+                ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+            //largura da linha em bytes - (largura em pixels * 3)
+            int padding = bitmapDataSrc.Stride - (width * pixelSize);
+            //stride - largura de uma linha em bytes 
+
+            unsafe //ignora os recursos padrão de segurança de memória gerenciada
+            {
+                byte* src1 = (byte*)bitmapDataSrc.Scan0.ToPointer();//endereço inicial dos dados do pixel
+                byte* dst = (byte*)bitmapDataDst.Scan0.ToPointer();
+
+                int r, g, b;
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        b = *(src1++); //está armazenado dessa forma: b g r 
+                        g = *(src1++);
+                        r = *(src1++);
+
+                        *(dst++) = (byte)(255 - b);
+                        *(dst++) = (byte)(255 - g);
+                        *(dst++) = (byte)(255 - r);
+                    }
+                    //garante que o loop não tente processar os bytes de preenchimento como se fossem dados de pixel
+                    src1 += padding;
+                    dst += padding;
+                }
+            }
+            //unlock imagem origem 
+            imageBitmapSrc.UnlockBits(bitmapDataSrc);
+            //unlock imagem destino
+            imageBitmapDest.UnlockBits(bitmapDataDst);
+        }
+
+
+
+
 
         //exercícios para estudo para a prova -> Sem DMA
         public static void espelho_vertical(Bitmap imageSrc, Bitmap imageDst)
@@ -344,73 +498,125 @@ namespace ProcessamentoImagens
             } //feito
         }
 
-        //sem acesso direto a memoria
-        public static void convert_to_gray(Bitmap imageBitmapSrc, Bitmap imageBitmapDest)
+
+        //com DMA
+
+        public static void espelho_verticalDMA(Bitmap imageSrc, Bitmap imageDst)
         {
-            int width = imageBitmapSrc.Width;
-            int height = imageBitmapSrc.Height;
-            int r, g, b;
-            Int32 gs;
-
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    //obtendo a cor do pixel
-                    Color cor = imageBitmapSrc.GetPixel(x, y);
-
-                    r = cor.R;
-                    g = cor.G;
-                    b = cor.B;
-                    gs = (Int32)(r * 0.2990 + g * 0.5870 + b * 0.1140);
-
-                    //nova cor
-                    Color newcolor = Color.FromArgb(gs, gs, gs);
-
-                    imageBitmapDest.SetPixel(x, y, newcolor);
-                }
-            }
-        }
-
-        //sem acesso direito a memoria
-        public static void negativo(Bitmap imageBitmapSrc, Bitmap imageBitmapDest)
-        {
-            int width = imageBitmapSrc.Width;
-            int height = imageBitmapSrc.Height;
-            int r, g, b;
-
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    //obtendo a cor do pixel
-                    Color cor = imageBitmapSrc.GetPixel(x, y);
-
-                    r = cor.R;
-                    g = cor.G;
-                    b = cor.B;
-
-                    //nova cor
-                    Color newcolor = Color.FromArgb(255 - r, 255 - g, 255 - b);
-
-                    imageBitmapDest.SetPixel(x, y, newcolor);
-                }
-            }
-        }
-
-        //com acesso direto a memória
-        public static void convert_to_grayDMA(Bitmap imageBitmapSrc, Bitmap imageBitmapDest)
-        {
-            int width = imageBitmapSrc.Width;
-            int height = imageBitmapSrc.Height;
+            int width = imageSrc.Width;
+            int height = imageSrc.Height;
             int pixelSize = 3;
-            Int32 gs;
 
-            //lock dados bitmap origem
-            BitmapData bitmapDataSrc = imageBitmapSrc.LockBits(new Rectangle(0, 0, width, height),
+            BitmapData bitmapDataSrc = imageSrc.LockBits(new Rectangle(0, 0, width, height),
                 ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
-            //lock dados bitmap destino
-            BitmapData bitmapDataDst = imageBitmapDest.LockBits(new Rectangle(0, 0, width, height),
+
+            BitmapData bitmapDataDst = imageDst.LockBits(new Rectangle(0, 0, width, height),
+                ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+            int padding = bitmapDataSrc.Stride - (width * pixelSize);
+
+            //stride = linha em bytes da img.
+            unsafe
+            {
+                byte* src = (byte*)bitmapDataSrc.Scan0.ToPointer();
+                byte* dst = (byte*)bitmapDataDst.Scan0.ToPointer();
+                byte* dstAux;
+
+                int stride = bitmapDataDst.Stride;
+
+                int r, g, b;
+                for(int y = 0; y < height; y++)
+                {
+                    for(int x = 0; x < width; x++)
+                    {
+                        b = *(src++);
+                        g = *(src++);
+                        r = *(src++);
+
+
+                        //acessar linha
+                        dstAux = dst + (y * stride);
+
+                        //acessar coluna
+                        dstAux += (width - 1 - x) * pixelSize;
+
+                        *(dstAux++) = (byte)b;
+                        *(dstAux++) = (byte)g;
+                        *(dstAux++) = (byte)r;
+
+                        //byte* p = basePixel + ((x - 1) * stride) + (y * pixelSize);
+                    }
+                    src += padding;
+                }
+            }
+            imageSrc.UnlockBits(bitmapDataSrc);
+            imageDst.UnlockBits(bitmapDataDst);
+        }
+
+        public static void espelho_horizontalDMA(Bitmap imageSrc, Bitmap imageDst)
+        {
+            int width = imageSrc.Width;
+            int height = imageSrc.Height;
+            int pixelSize = 3;
+
+            BitmapData bitmapDataSrc = imageSrc.LockBits(new Rectangle(0, 0, width, height),
+                ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+            BitmapData bitmapDataDst = imageDst.LockBits(new Rectangle(0, 0, width, height),
+                ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+            int padding = bitmapDataSrc.Stride - (width * pixelSize);
+
+            unsafe
+            {
+                byte* src = (byte*)bitmapDataSrc.Scan0.ToPointer();
+                byte* dst = (byte*)bitmapDataDst.Scan0.ToPointer();
+                byte* auxDst;
+
+                int r, g, b;
+
+                int stride = bitmapDataDst.Stride;
+
+
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        b = *(src++);
+                        g = *(src++);
+                        r = *(src++);
+
+                        //coluna 
+                        auxDst = dst + (x * pixelSize);
+
+                        //linha
+                        auxDst += (height - 1 - y) * stride;
+
+
+                        *(auxDst++) = (byte)b;
+                        *(auxDst++) = (byte)g;
+                        *(auxDst++) = (byte)r;
+
+
+                    }
+                    src += padding;
+                }
+            }
+            imageSrc.UnlockBits(bitmapDataSrc);
+            imageDst.UnlockBits(bitmapDataDst);
+        }
+
+        public static void canal_corDMA(Bitmap imageSrc, Bitmap imageDst, int azul, int vermelho, int verde)
+        {
+            int width = imageSrc.Width;
+            int height = imageSrc.Height;
+            int pixelSize = 3;
+            int r, g, b;
+
+            BitmapData bitmapDataSrc = imageSrc.LockBits(new Rectangle(0, 0, width, height),
+                ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+            BitmapData bitmapDataDst = imageDst.LockBits(new Rectangle(0, 0, width, height),
                 ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
 
             int padding = bitmapDataSrc.Stride - (width * pixelSize);
@@ -420,72 +626,368 @@ namespace ProcessamentoImagens
                 byte* src = (byte*)bitmapDataSrc.Scan0.ToPointer();
                 byte* dst = (byte*)bitmapDataDst.Scan0.ToPointer();
 
-                int r, g, b;
+
                 for (int y = 0; y < height; y++)
                 {
                     for (int x = 0; x < width; x++)
                     {
-                        b = *(src++); //está armazenado dessa forma: b g r
+                        b = *(src++);
                         g = *(src++);
                         r = *(src++);
-                        gs = (Int32)(r * 0.2990 + g * 0.5870 + b * 0.1140);
-                        *(dst++) = (byte)gs;
-                        *(dst++) = (byte)gs;
-                        *(dst++) = (byte)gs;
+
+                        if(azul == 1)
+                            g = r = 0;
+                        else if (vermelho == 1)
+                                g = b = 0;
+                        else if(verde == 1)
+                                b = r = 0;
+                        
+                            *(dst++) = (byte)b;
+                        *(dst++) = (byte)g;
+                        *(dst++) = (byte)r;
                     }
                     src += padding;
                     dst += padding;
                 }
             }
-            //unlock imagem origem
-            imageBitmapSrc.UnlockBits(bitmapDataSrc);
-            //unlock imagem destino
-            imageBitmapDest.UnlockBits(bitmapDataDst);
+            imageSrc.UnlockBits(bitmapDataSrc);
+            imageDst.UnlockBits(bitmapDataDst);
         }
 
-        //com acesso direito a memoria
-        public static void negativoDMA(Bitmap imageBitmapSrc, Bitmap imageBitmapDest)
+        public static void preto_brancoDMA(Bitmap imageSrc, Bitmap imageDst)
         {
-            int width = imageBitmapSrc.Width;
-            int height = imageBitmapSrc.Height;
+            int width = imageSrc.Width;
+            int height = imageSrc.Height;
             int pixelSize = 3;
+            int r, g, b;
 
-            //lock dados bitmap origem 
-            BitmapData bitmapDataSrc = imageBitmapSrc.LockBits(new Rectangle(0, 0, width, height),
-                ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
-            //lock dados bitmap destino
-            BitmapData bitmapDataDst = imageBitmapDest.LockBits(new Rectangle(0, 0, width, height),
+
+            BitmapData bitmapDataSrc = imageSrc.LockBits(new Rectangle(0, 0, width, height),
+               ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+            BitmapData bitmapDataDst = imageDst.LockBits(new Rectangle(0, 0, width, height),
                 ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
 
             int padding = bitmapDataSrc.Stride - (width * pixelSize);
 
             unsafe
             {
-                byte* src1 = (byte*)bitmapDataSrc.Scan0.ToPointer();
+                byte* src = (byte*)bitmapDataSrc.Scan0.ToPointer();
                 byte* dst = (byte*)bitmapDataDst.Scan0.ToPointer();
 
-                int r, g, b;
                 for (int y = 0; y < height; y++)
                 {
                     for (int x = 0; x < width; x++)
                     {
-                        b = *(src1++); //está armazenado dessa forma: b g r 
-                        g = *(src1++);
-                        r = *(src1++);
 
-                        *(dst++) = (byte)(255 - b);
-                        *(dst++) = (byte)(255 - g);
-                        *(dst++) = (byte)(255 - r);
+                        b = *(src++);
+                        g = *(src++);
+                        r = *(src++);
+
+                        if ((b + g + r) / 3 < 128) //então ele será preto
+                        {
+                            b = g = r = 0;
+                        }
+                        else
+                        {
+                            b = g = r = 255;
+                        }
+                        *(dst++) = (byte)b;
+                        *(dst++) = (byte)g;
+                        *(dst++) = (byte)r;
                     }
-                    src1 += padding;
                     dst += padding;
+                    src += padding;
                 }
             }
-            //unlock imagem origem 
-            imageBitmapSrc.UnlockBits(bitmapDataSrc);
-            //unlock imagem destino
-            imageBitmapDest.UnlockBits(bitmapDataDst);
+            imageSrc.UnlockBits(bitmapDataSrc);
+            imageDst.UnlockBits(bitmapDataDst);
         }
+
+        public static void noventaDMA(Bitmap imageSrc, Bitmap imageDst)
+        {
+            int widthSrc = imageSrc.Width;
+            int heightSrc = imageSrc.Height;
+            int widthDst = imageDst.Width;
+            int heightDst = imageDst.Height;
+            int pixelSize = 3;
+
+            BitmapData bitmapDataSrc = imageSrc.LockBits(new Rectangle(0, 0, widthSrc, heightSrc),
+               ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+            BitmapData bitmapDataDst = imageDst.LockBits(new Rectangle(0, 0, widthDst, heightDst),
+                ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+            int paddingSrc = bitmapDataSrc.Stride - (widthSrc * pixelSize);
+            int paddingDst = bitmapDataDst.Stride - (widthDst * pixelSize);
+
+            int strideSrc = bitmapDataSrc.Stride;
+            int strideDst = bitmapDataDst.Stride;
+
+            unsafe
+            {
+                byte* src = (byte*)bitmapDataSrc.Scan0.ToPointer();
+                byte* dst = (byte*)bitmapDataDst.Scan0.ToPointer();
+                byte* AuxDst;
+
+                int r, g, b;
+                for (int y = 0; y < heightSrc; y++)
+                {
+                    for (int x = 0; x < widthSrc; x++)
+                    {
+                        b = *(src++);
+                        g = *(src++);
+                        r = *(src++);
+
+
+                        //linha destino
+                        AuxDst = dst + (x * strideDst);
+
+                        //coluna destino
+                        AuxDst += (widthDst - y) * pixelSize;
+
+
+                        *(AuxDst++) = (byte)b;
+                        *(AuxDst++) = (byte)g;
+                        *(AuxDst++) = (byte)r;
+                    }
+                    src += paddingSrc;
+                }
+            }
+            imageSrc.UnlockBits(bitmapDataSrc);
+            imageDst.UnlockBits(bitmapDataDst);
+        }
+
+        public static void inverte_azul_vermelhoDMA(Bitmap imageSrc, Bitmap imageDst)
+        {
+            int width = imageSrc.Width;
+            int height = imageSrc.Height;
+            int pixelSize = 3;
+            int r, g, b;
+
+            BitmapData bitmapDataSrc = imageSrc.LockBits(new Rectangle(0, 0, width, height),
+               ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+            BitmapData bitmapDataDst = imageDst.LockBits(new Rectangle(0, 0, width, height),
+                ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+            int padding = bitmapDataSrc.Stride - (width * pixelSize);
+            unsafe
+            {
+                byte* src = (byte*)bitmapDataSrc.Scan0.ToPointer();
+                byte* dst = (byte*)bitmapDataDst.Scan0.ToPointer();
+
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        b = *(src++);
+                        g = *(src++);
+                        r = *(src++);
+
+                        *(dst++) = (byte)r;//vermelho no azul
+                        *(dst++) = (byte)g;
+                        *(dst++) = (byte)b;//azul no vermelho
+
+                    }
+                    src += padding;
+                    dst += padding;
+                }
+
+            }
+            imageSrc.UnlockBits(bitmapDataSrc);
+            imageDst.UnlockBits(bitmapDataDst);
+        }
+
+
+        public static void inverte_diagonalDMA(Bitmap imageSrc, Bitmap imageDst)
+        {
+            int width = imageSrc.Width;
+            int height = imageSrc.Height;
+            int pixelSize = 3;
+
+            BitmapData bitmapDataSrc = imageSrc.LockBits(new Rectangle(0, 0, width, height),
+               ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+            BitmapData bitmapDataDst = imageDst.LockBits(new Rectangle(0, 0, width, height),
+                ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+            int padding = bitmapDataSrc.Stride - (width * pixelSize);
+
+            int stride = bitmapDataSrc.Stride;
+
+            unsafe
+            {
+                int b, g, r;
+
+                byte* src = (byte*)bitmapDataSrc.Scan0.ToPointer();
+                byte* dst = (byte*)bitmapDataDst.Scan0.ToPointer();
+                byte* Auxdst;
+
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        b = (*src++);
+                        g = (*src++);
+                        r = (*src++);
+
+                        //calcula linha
+                        Auxdst = dst + ((height - y) * stride);
+
+                        //calcula coluna
+                        Auxdst += ((width - x) * pixelSize);
+
+
+
+                        *(Auxdst++) = (byte)b;
+                        *(Auxdst++) = (byte)g;
+                        *(Auxdst++) = (byte)r;
+                    }
+                    src += padding;
+                }
+            }
+            imageSrc.UnlockBits(bitmapDataSrc);
+            imageDst.UnlockBits(bitmapDataDst);
+        }
+
+        public static void racha_quatroDMA(Bitmap imageSrc, Bitmap imageDst)
+        {
+            int width = imageSrc.Width;
+            int height = imageSrc.Height;
+            int pixelSize = 3;
+
+            BitmapData bitmapDataSrc = imageSrc.LockBits(new Rectangle(0, 0, width, height),
+                ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+            BitmapData bitmapDataDst = imageDst.LockBits(new Rectangle(0, 0, width, height),
+                ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+            int padding = bitmapDataSrc.Stride - (width * pixelSize);
+
+            int stride = bitmapDataDst.Stride;
+
+            unsafe
+            {
+                byte *src = (byte*)bitmapDataSrc.Scan0.ToPointer();
+                byte *dst = (byte*)bitmapDataDst.Scan0.ToPointer();
+                byte *srcAux, dstAux;
+
+                int b, g, r;
+                //primeiro quadrate da origem
+                //for da metade de cima esquerda
+                for (int y = 0; y < height / 2; y++)
+                {
+                    for (int x = 0; x < width / 2; x++)
+                    {
+                        //coluna
+                        srcAux = src + (x * pixelSize);
+                        //linha
+                        srcAux += stride * y;
+
+                        b = *(srcAux++);
+                        g = *(srcAux++);
+                        r = *(srcAux++);
+
+                        //metade da linha
+                        dstAux = dst + ((height / 2) + y) * stride;
+
+                        dstAux += ((width/2)+x) *pixelSize;
+
+                        *(dstAux++) = (byte)b;
+                        *(dstAux++) = (byte)g;
+                        *(dstAux++) = (byte)r;
+                    }
+                } //FEITO
+
+                //segundo quadrante da origem
+                //for da metade de cima direita
+                for (int y = 0; y < height / 2; y++)
+                {
+                    for (int x = width / 2; x < width; x++)
+                    {
+                        //coluna
+                        srcAux = src + (x * pixelSize);
+                        //linha
+                        srcAux += stride * y;
+
+                        b = *(srcAux++);
+                        g = *(srcAux++);
+                        r = *(srcAux++);
+
+                        //metade da linha
+                        dstAux = dst + ((height / 2) + y) * stride;
+
+                        //metade da coluna
+                        dstAux += (x-(width/2)) * pixelSize;
+
+                        *(dstAux++) = (byte)b;
+                        *(dstAux++) = (byte)g;
+                        *(dstAux++) = (byte)r;
+                    }
+                } //FEITO
+
+                //terceiro quadrante da origem
+                //for da metade de baixo esquerda
+                for (int y = height / 2; y < height; y++)
+                {
+                    for (int x = 0; x < width / 2; x++)
+                    {
+                        //coluna
+                        srcAux = src + (x * pixelSize);
+                        //linha
+                        srcAux += stride * y;
+
+                        b = *(srcAux++);
+                        g = *(srcAux++);
+                        r = *(srcAux++);
+
+                        //metade da linha
+                        dstAux = dst + (y-(height/2)) * stride;
+
+                        //metade coluna
+                        dstAux += ((width/2)+ x)* pixelSize;
+
+                        *(dstAux++) = (byte)b;
+                        *(dstAux++) = (byte)g;
+                        *(dstAux++) = (byte)r;
+                    }
+                } //FEITO
+
+                //quarto quadrante da origem
+                //for da metade de baixo direita
+                for (int y = height / 2; y < height; y++)
+                {
+                    for (int x = width / 2; x < width; x++)
+                    {
+                        //coluna
+                        srcAux = src + (x * pixelSize);
+                        //linha
+                        srcAux += stride * y;
+
+                        b = *(srcAux++);
+                        g = *(srcAux++);
+                        r = *(srcAux++);
+
+                        //metade da linha
+                        dstAux = dst + (y - (height / 2)) * stride;
+
+                        dstAux += (x - (width / 2)) * pixelSize;
+
+                        *(dstAux++) = (byte)b;
+                        *(dstAux++) = (byte)g;
+                        *(dstAux++) = (byte)r;
+                    }
+                } //FEITO
+            }
+            imageSrc.UnlockBits(bitmapDataSrc);
+            imageDst.UnlockBits(bitmapDataDst);
+        }
+
+
+
+
+
 
         //metodo para auxiliar no algoritmo de zhang suen
         private static unsafe int Conectividade(byte* p2, byte* p3, byte* p4, byte* p5, byte* p6, byte* p7, byte* p8, byte* p9)
