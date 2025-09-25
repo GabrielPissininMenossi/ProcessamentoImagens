@@ -27,7 +27,8 @@ namespace ProcessamentoImagens
             {
                 image = Image.FromFile(openFileDialog.FileName);
                 pictBoxImg1.Image = image;
-                pictBoxImg1.SizeMode = PictureBoxSizeMode.Normal;
+                pictBoxImg1.SizeMode = PictureBoxSizeMode.Zoom;
+                pictBoxImg2.SizeMode = PictureBoxSizeMode.Zoom;
             }
         }
 
@@ -86,6 +87,89 @@ namespace ProcessamentoImagens
             imageBitmap = (Bitmap)image;
             Filtros.BordaDMA(imageBitmap, imgDest);
             pictBoxImg1.Image = imageBitmap;
+            pictBoxImg2.Image = imgDest;
+        }
+
+        //espelho vertical
+        private void btnEspelhoVertical_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image);
+            imageBitmap = (Bitmap)image;
+            Filtros.espelho_vertical(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
+        }
+
+        //espelho horizontal
+        private void btnEspelhoHorizontal_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image);
+            imageBitmap = (Bitmap)image;
+            Filtros.espelho_horizontal(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
+        }
+
+        private void btnCanalAzul_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image);
+            imageBitmap = (Bitmap)image;
+            Filtros.canal_azul(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
+        }
+        private void btnCanalVerde_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image);
+            imageBitmap = (Bitmap)image;
+            Filtros.canal_verde(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
+        }
+        private void btnCanalVermelho_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image);
+            imageBitmap = (Bitmap)image;
+            Filtros.canal_vermelho(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
+        }
+
+        private void btnPretoBranco_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image);
+            imageBitmap = (Bitmap)image;
+            Filtros.preto_branco(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
+        }
+
+        private void btnNoventa_Click(object sender, EventArgs e)
+        {
+            //pego invertido para poder girar a minha imagem 90 graus
+            imageBitmap = (Bitmap)image;
+            int width = imageBitmap.Height;
+            int height = imageBitmap.Width;
+            Bitmap imgDest = new Bitmap(width, height);
+            Filtros.noventa(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
+        }
+
+        private void btnInverteAzulVermelho_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image);
+            imageBitmap = (Bitmap)image;
+            Filtros.inverte_azul_vermelho(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
+        }
+
+        private void btnInverteDiagonal_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image);
+            imageBitmap = (Bitmap)image;
+            Filtros.inverte_diagonal(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
+        }
+
+        private void rachaQuatro_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image);
+            imageBitmap = (Bitmap)image;
+            Filtros.racha_quatro(imageBitmap, imgDest);
             pictBoxImg2.Image = imgDest;
         }
     }

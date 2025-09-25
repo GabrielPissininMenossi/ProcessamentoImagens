@@ -104,6 +104,246 @@ namespace ProcessamentoImagens
             return null;
         }
 
+        //exercícios para estudo para a prova -> Sem DMA
+        public static void espelho_vertical(Bitmap imageSrc, Bitmap imageDst)
+        {
+            int width = imageSrc.Width;
+            int height = imageSrc.Height;
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    //pego o pixel da imagem de origem
+                    Color cor = imageSrc.GetPixel(x, y);
+
+                    //seto o pixel atual de origem na minha imagem destino
+                    //faço a conta simples para o espelho e tiro 1 para não acessar posição fora do range
+                    imageDst.SetPixel(width-x-1, y, cor);
+                }
+            }
+        } 
+
+        public static void espelho_horizontal(Bitmap imageSrc, Bitmap imageDst)
+        {
+            int width = imageSrc.Width;
+            int height = imageSrc.Height;
+            Color cor;
+            for(int y=0; y<height; y++)
+            {
+                for(int x=0; x<width; x++)
+                {
+                    cor = imageSrc.GetPixel(x, y); //pego o origem
+                    imageDst.SetPixel(x, height-y-1, cor); //seto no destino realizando o cálculo
+                }
+            }
+        }
+
+        public static void canal_azul(Bitmap imageSrc, Bitmap imageDst)
+        {
+            int width = imageSrc.Width;
+            int height = imageSrc.Height;
+            int r, g, b;
+            Color cor;
+
+            for(int y=0; y<height; y++)
+            {
+                for(int x=0; x<width; x++)
+                {
+                    cor = imageSrc.GetPixel(x, y);
+                    b = cor.B;
+                    g = cor.G;
+                    r = cor.R;
+                    imageDst.SetPixel(x, y, Color.FromArgb(0, 0, b) );
+                }
+            }
+        }
+
+        public static void canal_verde(Bitmap imageSrc, Bitmap imageDst)
+        {
+            int width = imageSrc.Width;
+            int height = imageSrc.Height;
+            int r, g, b;
+            Color cor;
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    cor = imageSrc.GetPixel(x, y);
+                    b = cor.B;
+                    g = cor.G;
+                    r = cor.R;
+                    imageDst.SetPixel(x, y, Color.FromArgb(0, g, 0));
+                }
+            }
+        }
+
+        public static void canal_vermelho(Bitmap imageSrc, Bitmap imageDst)
+        {
+            int width = imageSrc.Width;
+            int height = imageSrc.Height;
+            int r, g, b;
+            Color cor;
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    cor = imageSrc.GetPixel(x, y);
+                    b = cor.B;
+                    g = cor.G;
+                    r = cor.R;
+                    imageDst.SetPixel(x, y, Color.FromArgb(r, 0, 0));
+                }
+            }
+        }
+
+        public static void preto_branco(Bitmap imageSrc, Bitmap imageDst)
+        {
+            int width = imageSrc.Width;
+            int height = imageSrc.Height;
+            int r, g, b;
+            Color cor;
+
+            for(int y=0; y<height; y++)
+            {
+                for(int x=0; x<width; x++)
+                {
+                    cor = imageSrc.GetPixel(x, y);
+                    b = cor.B;
+                    g = cor.G;
+                    r = cor.R;
+                    if((b+g+r)/3 < 128) //então ele será preto
+                    {
+                        b = 0;
+                        g = 0;
+                        r = 0;
+                    }
+                    else
+                    {
+                        b = 255;
+                        g = 255;
+                        r = 255;
+                    }
+                    imageDst.SetPixel(x, y, Color.FromArgb(r, g, b));
+                }
+            }
+        }
+
+        public static void noventa(Bitmap imageSrc, Bitmap imageDst)
+        {
+            int widthSrc = imageSrc.Width;
+            int heightSrc = imageSrc.Height;
+            int widthDst = imageDst.Width;
+            int heightDst = imageDst.Height;
+            Color cor;
+
+            for(int y=0; y<heightSrc; y++)
+            {
+                for(int x=0; x<widthSrc; x++)
+                {
+                    cor = imageSrc.GetPixel(x, y);
+
+                    imageDst.SetPixel(widthDst-y-1, x, cor);
+                }
+            }
+        }
+
+        public static void inverte_azul_vermelho(Bitmap imageSrc, Bitmap imageDst)
+        {
+            int width = imageSrc.Width;
+            int height = imageSrc.Height;
+            int r, g, b;
+            Color cor;
+            
+            for(int y=0; y<height; y++)
+            {
+                for(int x=0; x<width; x++)
+                {
+                    cor = imageSrc.GetPixel(x, y);
+                    r = cor.R;
+                    g = cor.G;
+                    b = cor.B;
+
+                    //fromArgb é na ordem r g b -> mas eu faço b g r para inverter os canais
+                    imageDst.SetPixel(x, y, Color.FromArgb(b,g,r));
+                }
+            }
+        }
+
+        public static void inverte_diagonal(Bitmap imageSrc, Bitmap imageDst)
+        {
+            int width = imageSrc.Width;
+            int height = imageSrc.Height;
+            Color cor;
+
+            for(int y=0; y<height; y++)
+            {
+                for(int x=0; x<width; x++)
+                {
+                    cor = imageSrc.GetPixel(x, y);
+
+                    //fazer as contas e mandar para o set pixel
+                    imageDst.SetPixel(width-1-x, height-1-y, cor);
+                }
+            }
+        }
+
+        public static void racha_quatro(Bitmap imageSrc, Bitmap imageDst)
+        {
+            int width = imageSrc.Width;
+            int height = imageSrc.Height;
+            Color cor;
+
+            //primeiro quadrate da origem
+            //for da metade de cima esquerda
+            for(int y=0; y<height/2; y++)
+            {
+                for(int x=0; x<width/2; x++)
+                {
+                    //vai ficar no quarto quadrante do meu destino
+                    cor = imageSrc.GetPixel(x, y);
+                    imageDst.SetPixel(width/2+x, height/2+y, cor);
+                }
+            } //feito
+
+            //segundo quadrante da origem
+            //for da metade de cima direita
+            for (int y = 0; y < height/2; y++)
+            {
+                for (int x = width/2; x < width; x++)
+                {
+                    //vai ficar no terceiro quadrante do meu destino
+                    cor = imageSrc.GetPixel(x, y);
+                    imageDst.SetPixel(x-(width/2), height / 2 + y, cor);
+                }
+            } //feito
+
+            //terceiro quadrante da origem
+            //for da metade de baixo esquerda
+            for (int y = height/2; y < height; y++)
+            {
+                for (int x = 0; x < width/2; x++)
+                {
+                    //vai ficar no segundo quadrante do meu destino
+                    cor = imageSrc.GetPixel(x, y);
+                    imageDst.SetPixel(width / 2 + x, y-(height/2), cor);
+                }
+            } //feito
+
+            //quarto quadrante da origem
+            //for da metade de baixo direita
+            for (int y = height/2; y < height; y++)
+            {
+                for (int x = width/2; x < width; x++)
+                {
+                    //vai ficar no primeiro quadrante do meu destino
+                    cor = imageSrc.GetPixel(x, y);
+                    imageDst.SetPixel(x-(width / 2), y-(height/2), cor);
+                }
+            } //feito
+        }
+
         //sem acesso direto a memoria
         public static void convert_to_gray(Bitmap imageBitmapSrc, Bitmap imageBitmapDest)
         {
