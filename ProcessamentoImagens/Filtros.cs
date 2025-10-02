@@ -354,7 +354,7 @@ namespace ProcessamentoImagens
             imageBitmapDest.UnlockBits(bitmapDataDst);
         }
 
-        //BORDA COUNTING FOLLOWING ----------------------------------------------------------------------------------------
+        //BORDA CONTOUR FOLLOWING ----------------------------------------------------------------------------------------
         private static unsafe void MarcarPixel(byte* pixel)
         {
             pixel[0] = 0; //B
