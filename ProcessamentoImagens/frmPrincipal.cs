@@ -38,137 +38,23 @@ namespace ProcessamentoImagens
             pictBoxImg2.Image = null;
         }
 
-        private void btnLuminanciaSemDMA_Click(object sender, EventArgs e)
-        {
-            //consigo chamar os métodos pois eles são estáticos na classe Filtros
-            Bitmap imgDest = new Bitmap(image);
-            imageBitmap = (Bitmap)image;
-            Filtros.convert_to_gray(imageBitmap, imgDest);
-            pictBoxImg2.Image = imgDest;
-        }
-
-        private void btnLuminanciaComDMA_Click(object sender, EventArgs e)
-        {
-            Bitmap imgDest = new Bitmap(image);
-            imageBitmap = (Bitmap)image;
-            Filtros.convert_to_grayDMA(imageBitmap, imgDest);
-            pictBoxImg2.Image = imgDest;
-        }
-
-        private void btnNegativoSemDMA_Click(object sender, EventArgs e)
-        {
-            Bitmap imgDest = new Bitmap(image);
-            imageBitmap = (Bitmap)image;
-            Filtros.negativo(imageBitmap, imgDest);
-            pictBoxImg2.Image = imgDest;
-        }
-
-        private void btnNegativoComDMA_Click(object sender, EventArgs e)
-        {
-            Bitmap imgDest = new Bitmap(image);
-            imageBitmap = (Bitmap)image;
-            Filtros.negativoDMA(imageBitmap, imgDest);
-            pictBoxImg2.Image = imgDest;
-        }
-
+        //esqueletizar zhang suen
         private void btnEsqueletizarComDMA_Click(object sender, EventArgs e)
         {
             Bitmap imgDest = new Bitmap(image);
             imageBitmap = (Bitmap)image;
             Filtros.EsqueletizarDMA(imageBitmap, imgDest);
             imageBitmap = new Bitmap(imgDest);
-            pictBoxImg1.Image = imageBitmap;
+            pictBoxImg1.Image = imageBitmap; //para que o algoritmo do zhang suen já possa pegar a imagem correta
             pictBoxImg2.Image = imgDest;
         }
 
+        //contorno countour following
         private void btnContornoComDMA_Click(object sender, EventArgs e)
         {
             Bitmap imgDest = new Bitmap(image);
             imageBitmap = (Bitmap)image;
             Filtros.ContornoDMA(imageBitmap, imgDest);
-            pictBoxImg2.Image = imgDest;
-        }
-
-        //espelho vertical
-        private void btnEspelhoVertical_Click(object sender, EventArgs e)
-        {
-            Bitmap imgDest = new Bitmap(image);
-            imageBitmap = (Bitmap)image;
-            Filtros.espelho_verticalDMA(imageBitmap, imgDest);
-            pictBoxImg2.Image = imgDest;
-        }
-
-        //espelho horizontal
-        private void btnEspelhoHorizontal_Click(object sender, EventArgs e)
-        {
-            Bitmap imgDest = new Bitmap(image);
-            imageBitmap = (Bitmap)image;
-            Filtros.espelho_horizontalDMA(imageBitmap, imgDest);
-            pictBoxImg2.Image = imgDest;
-        }
-
-        private void btnCanalAzul_Click(object sender, EventArgs e)
-        {
-            Bitmap imgDest = new Bitmap(image);
-            imageBitmap = (Bitmap)image;
-            Filtros.canal_corDMA(imageBitmap, imgDest,1,0,0);//(_,_,azul,vermelho,verde)
-            pictBoxImg2.Image = imgDest;
-        }
-        private void btnCanalVerde_Click(object sender, EventArgs e)
-        {
-            Bitmap imgDest = new Bitmap(image);
-            imageBitmap = (Bitmap)image;
-            Filtros.canal_corDMA(imageBitmap, imgDest,0,0,1);//(_,_,azul,vermelho,verde)
-            pictBoxImg2.Image = imgDest;
-        }
-        private void btnCanalVermelho_Click(object sender, EventArgs e)
-        {
-            Bitmap imgDest = new Bitmap(image);
-            imageBitmap = (Bitmap)image;
-            Filtros.canal_corDMA(imageBitmap, imgDest,0,1,0); //(_,_,azul,vermelho,verde)
-            pictBoxImg2.Image = imgDest;
-        }
-
-        private void btnPretoBranco_Click(object sender, EventArgs e)
-        {
-            Bitmap imgDest = new Bitmap(image);
-            imageBitmap = (Bitmap)image;
-            Filtros.preto_brancoDMA(imageBitmap, imgDest);
-            pictBoxImg2.Image = imgDest;
-        }
-
-        private void btnNoventa_Click(object sender, EventArgs e)
-        {
-            //pego invertido para poder girar a minha imagem 90 graus
-            imageBitmap = (Bitmap)image;
-            int width = imageBitmap.Height;
-            int height = imageBitmap.Width;
-            Bitmap imgDest = new Bitmap(width, height);
-            Filtros.noventaDMA(imageBitmap, imgDest);
-            pictBoxImg2.Image = imgDest;
-        }
-
-        private void btnInverteAzulVermelho_Click(object sender, EventArgs e)
-        {
-            Bitmap imgDest = new Bitmap(image);
-            imageBitmap = (Bitmap)image;
-            Filtros.inverte_azul_vermelhoDMA(imageBitmap, imgDest);
-            pictBoxImg2.Image = imgDest;
-        }
-
-        private void btnInverteDiagonal_Click(object sender, EventArgs e)
-        {
-            Bitmap imgDest = new Bitmap(image);
-            imageBitmap = (Bitmap)image;
-            Filtros.inverte_diagonalDMA(imageBitmap, imgDest);
-            pictBoxImg2.Image = imgDest;
-        }
-
-        private void rachaQuatro_Click(object sender, EventArgs e)
-        {
-            Bitmap imgDest = new Bitmap(image);
-            imageBitmap = (Bitmap)image;
-            Filtros.racha_quatroDMA(imageBitmap, imgDest);
             pictBoxImg2.Image = imgDest;
         }
     }
