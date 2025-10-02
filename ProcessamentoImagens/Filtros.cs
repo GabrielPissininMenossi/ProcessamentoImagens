@@ -1521,7 +1521,6 @@ namespace ProcessamentoImagens
                     }
                 } //terminado esse laço eu tenho os meus contornos finalizados
 
-
                 //escrever os marcados na imagem de destino
                 for (int y = 0; y < height; y++)
                 {
