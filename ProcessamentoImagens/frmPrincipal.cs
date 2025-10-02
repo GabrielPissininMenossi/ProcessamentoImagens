@@ -94,7 +94,7 @@ namespace ProcessamentoImagens
         {
             Bitmap imgDest = new Bitmap(image);
             imageBitmap = (Bitmap)image;
-            Filtros.espelho_vertical(imageBitmap, imgDest);
+            Filtros.espelho_verticalDMA(imageBitmap, imgDest);
             pictBoxImg2.Image = imgDest;
         }
 
@@ -103,7 +103,7 @@ namespace ProcessamentoImagens
         {
             Bitmap imgDest = new Bitmap(image);
             imageBitmap = (Bitmap)image;
-            Filtros.espelho_horizontal(imageBitmap, imgDest);
+            Filtros.espelho_horizontalDMA(imageBitmap, imgDest);
             pictBoxImg2.Image = imgDest;
         }
 
@@ -111,21 +111,21 @@ namespace ProcessamentoImagens
         {
             Bitmap imgDest = new Bitmap(image);
             imageBitmap = (Bitmap)image;
-            Filtros.canal_azul(imageBitmap, imgDest);
+            Filtros.canal_corDMA(imageBitmap, imgDest,1,0,0);//(_,_,azul,vermelho,verde)
             pictBoxImg2.Image = imgDest;
         }
         private void btnCanalVerde_Click(object sender, EventArgs e)
         {
             Bitmap imgDest = new Bitmap(image);
             imageBitmap = (Bitmap)image;
-            Filtros.canal_verde(imageBitmap, imgDest);
+            Filtros.canal_corDMA(imageBitmap, imgDest,0,0,1);//(_,_,azul,vermelho,verde)
             pictBoxImg2.Image = imgDest;
         }
         private void btnCanalVermelho_Click(object sender, EventArgs e)
         {
             Bitmap imgDest = new Bitmap(image);
             imageBitmap = (Bitmap)image;
-            Filtros.canal_vermelho(imageBitmap, imgDest);
+            Filtros.canal_corDMA(imageBitmap, imgDest,0,1,0); //(_,_,azul,vermelho,verde)
             pictBoxImg2.Image = imgDest;
         }
 
@@ -133,7 +133,7 @@ namespace ProcessamentoImagens
         {
             Bitmap imgDest = new Bitmap(image);
             imageBitmap = (Bitmap)image;
-            Filtros.preto_branco(imageBitmap, imgDest);
+            Filtros.preto_brancoDMA(imageBitmap, imgDest);
             pictBoxImg2.Image = imgDest;
         }
 
@@ -144,7 +144,7 @@ namespace ProcessamentoImagens
             int width = imageBitmap.Height;
             int height = imageBitmap.Width;
             Bitmap imgDest = new Bitmap(width, height);
-            Filtros.noventa(imageBitmap, imgDest);
+            Filtros.noventaDMA(imageBitmap, imgDest);
             pictBoxImg2.Image = imgDest;
         }
 
@@ -152,7 +152,7 @@ namespace ProcessamentoImagens
         {
             Bitmap imgDest = new Bitmap(image);
             imageBitmap = (Bitmap)image;
-            Filtros.inverte_azul_vermelho(imageBitmap, imgDest);
+            Filtros.inverte_azul_vermelhoDMA(imageBitmap, imgDest);
             pictBoxImg2.Image = imgDest;
         }
 
@@ -160,7 +160,7 @@ namespace ProcessamentoImagens
         {
             Bitmap imgDest = new Bitmap(image);
             imageBitmap = (Bitmap)image;
-            Filtros.inverte_diagonal(imageBitmap, imgDest);
+            Filtros.inverte_diagonalDMA(imageBitmap, imgDest);
             pictBoxImg2.Image = imgDest;
         }
 
@@ -168,7 +168,7 @@ namespace ProcessamentoImagens
         {
             Bitmap imgDest = new Bitmap(image);
             imageBitmap = (Bitmap)image;
-            Filtros.racha_quatro(imageBitmap, imgDest);
+            Filtros.racha_quatroDMA(imageBitmap, imgDest);
             pictBoxImg2.Image = imgDest;
         }
     }
