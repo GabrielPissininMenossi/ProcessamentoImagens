@@ -493,7 +493,82 @@ namespace ProcessamentoImagens
             }
         }
 
-        public static unsafe void ContornoDMA(Bitmap imageBitmapSrc, Bitmap imageBitmapDest)
+        public static unsafe void DesenharRetangulosDMA(Bitmap imageBitmapSrc, Bitmap imageBitmapDest, List<Point> coordenadas)
+        {
+            int width = imageBitmapSrc.Width;
+            int height = imageBitmapSrc.Height;
+            int pixelSize = 3;
+
+            //lock bits
+            BitmapData bitmapDataSrc = imageBitmapSrc.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            BitmapData bitmapDataDst = imageBitmapDest.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+            int stride = bitmapDataSrc.Stride;
+            int padding = stride - (width * pixelSize);
+
+            unsafe
+            {
+                byte* src = (byte*)bitmapDataSrc.Scan0.ToPointer(); //ponteiro para o (0,0) de fonte
+                byte* dst = (byte*)bitmapDataDst.Scan0.ToPointer(); //ponteiro para o (0,0) de destino
+
+                //escrever os marcados na imagem de destino
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        if (Marcado(src)) //preto no destino
+                        {
+                            *(dst++) = 0; //blue -> b
+                            *(dst++) = 0; //green -> g
+                            *(dst++) = 0; //red -> r
+                        }
+                        else //branco no destino
+                        {
+                            *(dst++) = 255; //blue -> b
+                            *(dst++) = 255; //green -> g
+                            *(dst++) = 255; //red -> r
+                        }
+                        src += pixelSize;
+                    }
+                    src += padding;
+                    dst += padding;
+                } //imagem destino com apenas os contornos
+
+                //fazer o retângulo
+                dst = (byte*)bitmapDataDst.Scan0.ToPointer(); //ponteiro para o (0,0) de destino
+                for (int i = 0; i < coordenadas.Count; i += 2)
+                {
+                    Point ponto1 = coordenadas[i];
+                    Point ponto2 = coordenadas[i + 1];
+
+                    int minX, minY, maxX, maxY;
+                    maxX = ponto1.X;
+                    maxY = ponto1.Y;
+                    minX = ponto2.X;
+                    minY = ponto2.Y;
+                    for (int y2 = minY; y2 <= maxY; y2++)
+                    {
+                        byte* linhaRet = dst + y2 * stride + minX * pixelSize;
+                        MarcarPixel(linhaRet);
+                        linhaRet = dst + y2 * stride + maxX * pixelSize;
+                        MarcarPixel(linhaRet);
+                    }
+                    for (int x2 = minX; x2 <= maxX; x2++)
+                    {
+                        byte* colunaRet = dst + minY * stride + x2 * pixelSize;
+                        MarcarPixel(colunaRet);
+                        colunaRet = dst + maxY * stride + x2 * pixelSize;
+                        MarcarPixel(colunaRet);
+                    }
+                }
+            }
+            coordenadas.Clear();
+
+            imageBitmapSrc.UnlockBits(bitmapDataSrc);
+            imageBitmapDest.UnlockBits(bitmapDataDst);
+        }
+
+        public static unsafe void ContornoDMA(Bitmap imageBitmapSrc, Bitmap imageBitmapDest, List<Point> pontosRetangulo)
         {
             int width = imageBitmapSrc.Width;
             int height = imageBitmapSrc.Height;
@@ -597,20 +672,14 @@ namespace ProcessamentoImagens
                             } while(atualContorno!=inicial); //enquanto verdade o contorno precisa continuar
 
                             //fazer o retângulo
-                            for(int y2=minY; y2<=maxY; y2++)
-                            {
-                                byte* linhaRet = dst + y2*stride + minX*pixelSize;
-                                MarcarPixel(linhaRet);
-                                linhaRet = dst + y2*stride + maxX*pixelSize;
-                                MarcarPixel(linhaRet);
-                            }
-                            for(int x2=minX; x2<=maxX; x2++)
-                            {
-                                byte* colunaRet = dst + minY*stride + x2*pixelSize;
-                                MarcarPixel(colunaRet);
-                                colunaRet = dst + maxY*stride + x2*pixelSize;
-                                MarcarPixel(colunaRet);
-                            }
+                            Point ponto1 = new Point();
+                            Point ponto2 = new Point();
+                            ponto1.X = maxX;
+                            ponto1.Y = maxY;
+                            ponto2.X = minX;
+                            ponto2.Y = minY;
+                            pontosRetangulo.Add(ponto1);
+                            pontosRetangulo.Add(ponto2);
                         }
                     }
                 } //terminado esse laço eu tenho os meus contornos finalizados
@@ -620,21 +689,17 @@ namespace ProcessamentoImagens
                 {
                     for (int x = 0; x < width; x++)
                     {
-                        if (Marcado(src) && !Marcado(dst)) //preto no destino
+                        if (Marcado(src)) //preto no destino
                         {
                             *(dst++) = 0; //blue -> b
                             *(dst++) = 0; //green -> g
                             *(dst++) = 0; //red -> r
                         }
-                        else if(!Marcado(dst)) //branco no destino
+                        else //branco no destino
                         {
                             *(dst++) = 255; //blue -> b
                             *(dst++) = 255; //green -> g
                             *(dst++) = 255; //red -> r
-                        }
-                        else
-                        {
-                            dst += pixelSize;
                         }
                         src += pixelSize;
                     }

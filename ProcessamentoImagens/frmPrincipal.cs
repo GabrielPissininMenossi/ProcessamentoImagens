@@ -13,6 +13,7 @@ namespace ProcessamentoImagens
     {
         private Image image;
         private Bitmap imageBitmap;
+        private List<Point> pontosRetangulo = new List<Point>();
 
         public frmPrincipal()
         {
@@ -54,7 +55,16 @@ namespace ProcessamentoImagens
         {
             Bitmap imgDest = new Bitmap(image);
             imageBitmap = (Bitmap)image;
-            Filtros.ContornoDMA(imageBitmap, imgDest);
+            Filtros.ContornoDMA(imageBitmap, imgDest, pontosRetangulo);
+            pictBoxImg2.Image = imgDest;
+        }
+
+        //retangulos com DMA
+        private void btnRetanguloComDMA_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image);
+            imageBitmap = (Bitmap)image;
+            Filtros.DesenharRetangulosDMA(imageBitmap, imgDest, pontosRetangulo);
             pictBoxImg2.Image = imgDest;
         }
     }

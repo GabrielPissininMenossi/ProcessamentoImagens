@@ -34,7 +34,8 @@
             this.btnLimpar = new System.Windows.Forms.Button();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.btnEsqueletizarComDMA = new System.Windows.Forms.Button();
-            this.btnBorda = new System.Windows.Forms.Button();
+            this.btnContorno = new System.Windows.Forms.Button();
+            this.btnRetangulos = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictBoxImg1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictBoxImg2)).BeginInit();
             this.SuspendLayout();
@@ -87,22 +88,33 @@
             this.btnEsqueletizarComDMA.UseVisualStyleBackColor = true;
             this.btnEsqueletizarComDMA.Click += new System.EventHandler(this.btnEsqueletizarComDMA_Click);
             // 
-            // btnBorda
+            // btnContorno
             // 
-            this.btnBorda.Location = new System.Drawing.Point(438, 512);
-            this.btnBorda.Name = "btnBorda";
-            this.btnBorda.Size = new System.Drawing.Size(167, 57);
-            this.btnBorda.TabIndex = 113;
-            this.btnBorda.Text = "Contorno e Retângulos";
-            this.btnBorda.UseVisualStyleBackColor = true;
-            this.btnBorda.Click += new System.EventHandler(this.btnContornoComDMA_Click);
+            this.btnContorno.Location = new System.Drawing.Point(438, 512);
+            this.btnContorno.Name = "btnContorno";
+            this.btnContorno.Size = new System.Drawing.Size(167, 57);
+            this.btnContorno.TabIndex = 113;
+            this.btnContorno.Text = "Contorno";
+            this.btnContorno.UseVisualStyleBackColor = true;
+            this.btnContorno.Click += new System.EventHandler(this.btnContornoComDMA_Click);
+            // 
+            // btnRetangulos
+            // 
+            this.btnRetangulos.Location = new System.Drawing.Point(611, 512);
+            this.btnRetangulos.Name = "btnRetangulos";
+            this.btnRetangulos.Size = new System.Drawing.Size(167, 57);
+            this.btnRetangulos.TabIndex = 114;
+            this.btnRetangulos.Text = "Retângulos";
+            this.btnRetangulos.UseVisualStyleBackColor = true;
+            this.btnRetangulos.Click += new System.EventHandler(this.btnRetanguloComDMA_Click);
             // 
             // frmPrincipal
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1220, 608);
-            this.Controls.Add(this.btnBorda);
+            this.Controls.Add(this.btnRetangulos);
+            this.Controls.Add(this.btnContorno);
             this.Controls.Add(this.btnEsqueletizarComDMA);
             this.Controls.Add(this.btnLimpar);
             this.Controls.Add(this.btnAbrirImagem);
@@ -125,7 +137,8 @@
         private System.Windows.Forms.Button btnLimpar;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
         private System.Windows.Forms.Button btnEsqueletizarComDMA;
-        private System.Windows.Forms.Button btnBorda;
+        private System.Windows.Forms.Button btnContorno;
+        private System.Windows.Forms.Button btnRetangulos;
     }
 }
 
