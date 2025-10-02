@@ -27,8 +27,8 @@ namespace ProcessamentoImagens
             {
                 image = Image.FromFile(openFileDialog.FileName);
                 pictBoxImg1.Image = image;
-                pictBoxImg1.SizeMode = PictureBoxSizeMode.Zoom;
-                pictBoxImg2.SizeMode = PictureBoxSizeMode.Zoom;
+                pictBoxImg1.SizeMode = PictureBoxSizeMode.AutoSize;
+                pictBoxImg2.SizeMode = PictureBoxSizeMode.AutoSize;
             }
         }
 
@@ -76,17 +76,16 @@ namespace ProcessamentoImagens
             Bitmap imgDest = new Bitmap(image);
             imageBitmap = (Bitmap)image;
             Filtros.EsqueletizarDMA(imageBitmap, imgDest);
-            //imgDest = imageBitmap;
+            imageBitmap = new Bitmap(imgDest);
             pictBoxImg1.Image = imageBitmap;
             pictBoxImg2.Image = imgDest;
         }
 
-        private void btnBordaComDMA_Click(object sender, EventArgs e)
+        private void btnContornoComDMA_Click(object sender, EventArgs e)
         {
             Bitmap imgDest = new Bitmap(image);
             imageBitmap = (Bitmap)image;
-            Filtros.BordaDMA(imageBitmap, imgDest);
-            pictBoxImg1.Image = imageBitmap;
+            Filtros.ContornoDMA(imageBitmap, imgDest);
             pictBoxImg2.Image = imgDest;
         }
 

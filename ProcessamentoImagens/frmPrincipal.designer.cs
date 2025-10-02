@@ -147,9 +147,9 @@
             this.btnBorda.Name = "btnBorda";
             this.btnBorda.Size = new System.Drawing.Size(125, 23);
             this.btnBorda.TabIndex = 113;
-            this.btnBorda.Text = "Borda e Retangulo";
+            this.btnBorda.Text = "Contorno";
             this.btnBorda.UseVisualStyleBackColor = true;
-            this.btnBorda.Click += new System.EventHandler(this.btnBordaComDMA_Click);
+            this.btnBorda.Click += new System.EventHandler(this.btnContornoComDMA_Click);
             // 
             // espelhoHorizontal
             // 

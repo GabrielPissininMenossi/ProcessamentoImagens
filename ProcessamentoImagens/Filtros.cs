@@ -13,6 +13,7 @@ namespace ProcessamentoImagens
         //variaveis para os pixels vizinhos do shang suen
         private unsafe byte* p1, p2, p3, p4, p5, p6, p7, p8, p9;
 
+        //nos meus métodos de GetPn, x é a linha e y é a coluna
         //alguns métodos para pegar os vizinhos de p1
         private static unsafe byte* GetP2(int x, int y, int width, int height, int pixelSize, int stride, byte* basePixel)
         {
@@ -24,8 +25,7 @@ namespace ProcessamentoImagens
                 return p;
             }
             return null;
-        } //feito
-
+        }
         private static unsafe byte* GetP3(int x, int y, int width, int height, int pixelSize, int stride, byte* basePixel)
         {
             if (y + 1 < width && x - 1 >= 0) //verifica o range de coluna e linha
@@ -36,7 +36,7 @@ namespace ProcessamentoImagens
                 return p;
             }
             return null;
-        } //feito
+        }
         private static unsafe byte* GetP4(int x, int y, int width, int height, int pixelSize, int stride, byte* basePixel)
         {
             if (y + 1 < width)
@@ -47,7 +47,7 @@ namespace ProcessamentoImagens
                 return p;
             }
             return null;
-        } //feito
+        }
         private static unsafe byte* GetP5(int x, int y, int width, int height, int pixelSize, int stride, byte* basePixel)
         {
             if (y + 1 < width && x + 1 < height) //verificar o range de baixo
@@ -565,14 +565,13 @@ namespace ProcessamentoImagens
                         aux1 = src + x * bitmapDataSrc.Stride + y * pixelSize;
                         aux2 = dst + x * bitmapDataDst.Stride + y * pixelSize;
 
-                        //Color pixel = imageBitmapSrc.GetPixel(y, x);
                         int media = (aux1[0] + aux1[1] + aux1[2]) / 3;
                         if (media < 128)
                         {
                             aux1[0] = 0;
                             aux1[1] = 0;
-                            aux2[0] = 0;
                             aux1[2] = 0;
+                            aux2[0] = 0;
                             aux2[1] = 0;
                             aux2[2] = 0;
                         }
@@ -585,8 +584,6 @@ namespace ProcessamentoImagens
                             aux2[1] = 255;
                             aux2[2] = 255;
                         }
-                        //imageBitmapSrc.SetPixel(y, x, novo);
-                        //imageBitmapDest.SetPixel(y, x, novo);
                     }
                 }
             }
@@ -745,437 +742,221 @@ namespace ProcessamentoImagens
         //BORDA COUNTING FOLLOWING ----------------------------------------------------------------------------------------
         private static unsafe Boolean DireitaIsPreto(byte* pixelAtual)
         {
-            byte* direita = pixelAtual + 3;
-            return IsPreto(direita);
-        }
-
-        private static unsafe byte* AcharVizinho(int dirAnt, byte* p0, byte* p1, byte* p2, byte* p3, byte* p4, byte* p5, byte* p6, byte* p7)
-        {
-            // começar busca no vizinho seguinte ao anterior (anti-horário)
-            int inicio = (dirAnt + 1) % 8;
-            byte* p = null;
-            Boolean flag = false;
-            int pos;
-
-            for (int i = 0; i < 8 && !flag; i++)
-            {
-                pos = (inicio + i) % 8;
-                switch (pos)
-                {
-                    case 0:
-                        p = p0;
-                        break;
-                    case 1:
-                        p = p1;
-                        break;
-                    case 2:
-                        p = p2;
-                        break;
-                    case 3:
-                        p = p3;
-                        break;
-                    case 4:
-                        p = p4;
-                        break;
-                    case 5:
-                        p = p5;
-                        break;
-                    case 6:
-                        p = p6;
-                        break;
-                    case 7:
-                        p = p7;
-                        break;
-                }
-
-                if (p != null && !Marcado(p) && IsPreto(p))
-                {
-                    flag = true;
-                    //return p;
-                }
-            }
-
-            if (flag) //então achei o próximo vizinho
-                return p;
-            return null;
+            return IsPreto(pixelAtual+3);
         }
 
         private static unsafe void MarcarPixel(byte* pixel)
         {
-            //o meu pixel ficará marcado como vermelho
-            pixel[0] = 0; //b
-            pixel[1] = 0; //g
-            pixel[2] = 255; //r
+            pixel[0] = 0; //B
+            pixel[1] = 0; //G
+            pixel[2] = 255; //R -> deixo como inteiramente vermelho
         }
 
-        private static unsafe Boolean Marcado(byte* pixel)
+        private static unsafe bool Marcado(byte* pixel)
         {
-            //retorna true se o pixel é inteiramente vermelho
             return pixel[0] == 0 && pixel[1] == 0 && pixel[2] == 255;
         }
 
-        private static unsafe Boolean IsPreto(byte* pixel)
+        private static unsafe bool IsPreto(byte* pixel)
         {
             return pixel[0] == 0 && pixel[1] == 0 && pixel[2] == 0;
         }
 
-        private static unsafe Boolean IsBranco(byte* pixel)
+        private static unsafe bool IsBranco(byte* pixel)
         {
             return pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255;
         }
 
-        private static unsafe int IndiceDoVizinho(byte* prox, byte* p0, byte* p1, byte* p2, byte* p3, byte* p4, byte* p5, byte* p6, byte* p7)
+        private static unsafe byte* GetP(int linha, int coluna, int width, int height, int stride, int pixelSize, byte* src)
         {
-            if (prox == p0) return 0;
-            if (prox == p1) return 1;
-            if (prox == p2) return 2;
-            if (prox == p3) return 3;
-            if (prox == p4) return 4;
-            if (prox == p5) return 5;
-            if (prox == p6) return 6;
-            if (prox == p7) return 7;
-            return -1; //só para não acusar erro
+            //retorna o pixel na posicão (linha, coluna)
+            if (linha>=0 && linha<height && coluna>=0 && coluna<width)
+            {
+                //o src deve apontar para o pixel (0,0) da imagem com a qual eu quero trabalhar
+                return src + linha*stride + coluna*pixelSize;
+            }
+            return null;
         }
 
-        public static void BordaDMA(Bitmap imageBitmapSrc, Bitmap imageBitmapDest)
+        private static unsafe void AcharPosicao(int[] proximos, int xAtual, int yAtual, int width, int height, int stride, int pixelSize, byte* src, int* direcao)
         {
-            int width = imageBitmapSrc.Width; // pega a largura da imagem em inteiros
-            int height = imageBitmapSrc.Height; // pega a altura da imagem em inteiros
-            int pixelSize = 3;
+            //conectividade 8, pegar todos eles
+            byte* p2 = GetP(yAtual-1, xAtual, width, height, stride, pixelSize, src); //acima
+            byte* p1 = GetP(yAtual-1, xAtual+1, width, height, stride, pixelSize, src); //acima direita
+            byte* p0 = GetP(yAtual, xAtual+1, width, height, stride, pixelSize, src); //direita
+            byte* p7 = GetP(yAtual+1, xAtual+1, width, height, stride, pixelSize, src); //abaixo direita
+            byte* p6 = GetP(yAtual+1, xAtual, width, height, stride, pixelSize, src); //abaixo
+            byte* p5 = GetP(yAtual+1, xAtual-1, width, height, stride, pixelSize, src); //abaixo esquerda
+            byte* p4 = GetP(yAtual, xAtual-1, width, height, stride, pixelSize, src); //esquerda
+            byte* p3 = GetP(yAtual-1, xAtual-1, width, height, stride, pixelSize, src); //acima esquerda
+            proximos[0] = -1; proximos[1] = -1; //deixar como inválido inicialmente
+            byte*[] pixels = new byte*[8] { p0, p1, p2, p3, p4, p5, p6, p7 };
+            bool achou = false;
 
-            //lock dados bitmap origem 
-            BitmapData bitmapDataSrc = imageBitmapSrc.LockBits(new Rectangle(0, 0, width, height),
-                ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
-            //lock dados bitmap destino
-            BitmapData bitmapDataDst = imageBitmapDest.LockBits(new Rectangle(0, 0, width, height),
-                ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
-            unsafe
+            for (int i=0; i<8 && !achou; i++)
             {
+                int indice = (*direcao + i + 1) % 8;
 
-                byte* src = (byte*)bitmapDataSrc.Scan0.ToPointer();
-                byte* dst = (byte*)bitmapDataDst.Scan0.ToPointer();
-                byte* srcAux, dstAux, aux, aux1;
-
-                //deixar a imagem de destino zerada
-                for (int y = 0; y < imageBitmapDest.Height; y++)
+                if (pixels[indice]!=null && IsPreto(pixels[indice]))
                 {
-                    for (int x = 0; x < imageBitmapDest.Width; x++)
+                    int indiceAnterior = (indice + 7) % 8;
+                    if(pixels[indiceAnterior]!=null)
                     {
-                        aux1 = dst + y * bitmapDataDst.Stride + x * pixelSize;
-                        aux1[0] = 255;
-                        aux1[1] = 255;
-                        aux1[2] = 255;
-                    }
-                }
-
-                int pR, r0 = -1, r1 = -1, r2 = -1, r3 = -1, r4 = -1, r5 = -1, r6 = -1, r7 = -1;
-                int pG, g0 = -1, g1 = -1, g2 = -1, g3 = -1, g4 = -1, g5 = -1, g6 = -1, g7 = -1;
-                int pB, b0 = -1, b1 = -1, b2 = -1, b3 = -1, b4 = -1, b5 = -1, b6 = -1, b7 = -1;
-                byte* p0, p1, p2, p3, p4, p5, p6, p7;
-                int direcao, proximaDirecao;
-                int cordX, cordY, inicioY, inicioX, i, flag;
-                int[] coordenadas = new int[(width * height) * 2];
-                int TL = 0;
-                for (int y = 1; y < height - 1; y++)
-                {
-                    for (int x = 1; x < width - 1; x++)
-                    {
-                        srcAux = src + y * bitmapDataSrc.Stride + x * pixelSize; // desloco o ponteiro para meu y e x atual
-                        pB = *(srcAux++);
-                        pG = *(srcAux++);
-                        pR = *(srcAux++);
-
-                        aux = src + y * bitmapDataSrc.Stride + (x + 1) * pixelSize; // pixel à direita
-                        b0 = (*aux++);
-                        g0 = (*aux++);
-                        r0 = (*aux++);
-                        if ((pR >= 127 && pG >= 127 && pB >= 127) && (r0 < 127 && g0 < 127 && b0 < 127)) // pixel preto à direita do branco
+                        switch (indiceAnterior)
                         {
-                            // primeiro elemento do contorno  
-                            direcao = 4;
-
-                            inicioY = y;
-                            inicioX = x + 1;
-                            cordX = inicioX;
-                            cordY = inicioY;
-                            coordenadas[TL++] = cordY; // linha
-                            coordenadas[TL++] = cordX; // coluna
-                            do
-                            {
-
-                                //aqui eu pego os meus vizinhos
-                                if (cordX + 1 < width) // validação para não acessar lixo
-                                {
-                                    aux = src + cordY * bitmapDataSrc.Stride + (cordX + 1) * pixelSize;
-                                    b0 = (*aux++);
-                                    g0 = (*aux++);
-                                    r0 = (*aux++);
-                                }
-
-                                if (cordX + 1 < width && cordY - 1 >= 0)
-                                {
-                                    aux = src + (cordY - 1) * bitmapDataSrc.Stride + (cordX + 1) * pixelSize;
-                                    b1 = (*aux++);
-                                    g1 = (*aux++);
-                                    r1 = (*aux++);
-                                }
-
-                                if (cordY - 1 >= 0)
-                                {
-                                    aux = src + (cordY - 1) * bitmapDataSrc.Stride + cordX * pixelSize;
-                                    b2 = (*aux++);
-                                    g2 = (*aux++);
-                                    r2 = (*aux++);
-                                }
-
-                                if (cordY - 1 >= 0 && cordX - 1 >= 0)
-                                {
-                                    aux = src + (cordY - 1) * bitmapDataSrc.Stride + (cordX - 1) * pixelSize;
-                                    b3 = (*aux++);
-                                    g3 = (*aux++);
-                                    r3 = (*aux++);
-                                }
-
-                                if (cordX - 1 >= 0)
-                                {
-                                    aux = src + cordY * bitmapDataSrc.Stride + (cordX - 1) * pixelSize;
-                                    b4 = (*aux++);
-                                    g4 = (*aux++);
-                                    r4 = (*aux++);
-                                }
-
-                                if (cordY + 1 < height && cordX - 1 >= 0)
-                                {
-                                    aux = src + (cordY + 1) * bitmapDataSrc.Stride + (cordX - 1) * pixelSize;
-                                    b5 = (*aux++);
-                                    g5 = (*aux++);
-                                    r5 = (*aux++);
-                                }
-
-                                if (cordY + 1 < height)
-                                {
-                                    aux = src + (cordY + 1) * bitmapDataSrc.Stride + cordX * pixelSize;
-                                    b6 = (*aux++);
-                                    g6 = (*aux++);
-                                    r6 = (*aux++);
-                                }
-
-                                if (cordY + 1 < height && cordX + 1 < width)
-                                {
-                                    aux = src + (cordY + 1) * bitmapDataSrc.Stride + (cordX + 1) * pixelSize;
-                                    b7 = (*aux++);
-                                    g7 = (*aux++);
-                                    r7 = (*aux++);
-                                }
-
-                                i = 0;
-                                flag = 0;
-                                while (i < 8 && flag != 1) // proximo p
-                                {
-                                    proximaDirecao = (direcao + 1 + i) % 8; // da onde eu vim
-
-                                    if (proximaDirecao == 0 && cordX + 1 < width && r0 < 127 && g0 < 127 && b0 < 127)
-                                    {
-                                        cordX++;
-                                        flag = 1;
-                                    }
-                                    else
-                                    if (proximaDirecao == 1 && cordX + 1 < width && cordY - 1 >= 0 && r1 < 127 && g1 < 127 && b1 < 127)
-                                    {
-                                        cordY--;
-                                        cordX++;
-                                        flag = 1;
-                                    }
-                                    else
-                                    if (proximaDirecao == 2 && cordY - 1 >= 0 && r2 < 127 && g2 < 127 && b2 < 127)
-                                    {
-                                        cordY--;
-                                        flag = 1;
-                                    }
-                                    else
-                                    if (proximaDirecao == 3 && cordY - 1 >= 0 && r3 < 127 && g3 < 127 && b3 < 127)
-                                    {
-                                        cordY--;
-                                        cordX--;
-                                        flag = 1;
-                                    }
-                                    else
-                                    if (proximaDirecao == 4 && cordX - 1 >= 0 && r4 < 127 && g4 < 127 && b4 < 127)
-                                    {
-                                        cordX--;
-                                        flag = 1;
-                                    }
-                                    else
-                                    if (proximaDirecao == 5 && cordY + 1 < height && cordX - 1 >= 0 && r5 < 127 && g5 < 127 && b5 < 127)
-                                    {
-
-                                        cordY++;
-                                        cordX--;
-                                        flag = 1;
-                                    }
-                                    else
-                                    if (proximaDirecao == 6 && cordY + 1 < height && r6 < 127 && g6 < 127 && b6 < 127)
-                                    {
-                                        cordY++;
-                                        flag = 1;
-                                    }
-                                    else
-                                    if (proximaDirecao == 7 && cordX + 1 < width && cordY + 1 < height && r7 < 127 && g7 < 127 && b7 < 127)
-                                    {
-
-                                        cordY++;
-                                        cordX++;
-                                        flag = 1;
-
-                                    }
-
-                                    if (flag == 1)
-                                    {
-                                        direcao = (proximaDirecao + 4) % 8;
-                                        coordenadas[TL++] = cordY; // linha
-                                        coordenadas[TL++] = cordX; // coluna
-                                    }
-                                    i++;
-                                }
-
-                            } while (cordX != inicioX || cordY != inicioY);
+                            case 0: //direita
+                                proximos[0] = xAtual + 1; //coluna
+                                proximos[1] = yAtual; //linha
+                                break;
+                            case 1: //acima direita
+                                proximos[0] = xAtual + 1; //coluna
+                                proximos[1] = yAtual - 1; //linha
+                                break;
+                            case 2: //acima
+                                proximos[0] = xAtual; //coluna
+                                proximos[1] = yAtual - 1; //linha
+                                break;
+                            case 3: //acima esquerda
+                                proximos[0] = xAtual - 1; //coluna
+                                proximos[1] = yAtual - 1; //linha
+                                break;
+                            case 4: //esquerda
+                                proximos[0] = xAtual - 1; //coluna
+                                proximos[1] = yAtual; //linha
+                                break;
+                            case 5: //abaixo esquerda
+                                proximos[0] = xAtual - 1; //coluna
+                                proximos[1] = yAtual + 1; //linha
+                                break;
+                            case 6: //abaixo
+                                proximos[0] = xAtual; //coluna
+                                proximos[1] = yAtual + 1; //linha
+                                break;
+                            case 7: //abaixo direita
+                                proximos[0] = xAtual + 1; //coluna
+                                proximos[1] = yAtual + 1; //linha
+                                break;
                         }
-
-                    }
-                }
-
-                i = 0;
-                while (i < TL)
-                {
-                    cordY = coordenadas[i++];
-                    cordX = coordenadas[i++];
-
-                    if (cordX + 1 < width)
-                    {
-                        aux = src + cordY * bitmapDataSrc.Stride + (cordX + 1) * pixelSize;
-                        b0 = (*aux++);
-                        g0 = (*aux++);
-                        r0 = (*aux++);
-                    }
-
-                    if (cordX + 1 < width && cordY - 1 >= 0)
-                    {
-                        aux = src + (cordY - 1) * bitmapDataSrc.Stride + (cordX + 1) * pixelSize;
-                        b1 = (*aux++);
-                        g1 = (*aux++);
-                        r1 = (*aux++);
-                    }
-
-                    if (cordY - 1 >= 0)
-                    {
-                        aux = src + (cordY - 1) * bitmapDataSrc.Stride + cordX * pixelSize;
-                        b2 = (*aux++);
-                        g2 = (*aux++);
-                        r2 = (*aux++);
-                    }
-
-                    if (cordY - 1 >= 0 && cordX - 1 >= 0)
-                    {
-                        aux = src + (cordY - 1) * bitmapDataSrc.Stride + (cordX - 1) * pixelSize;
-                        b3 = (*aux++);
-                        g3 = (*aux++);
-                        r3 = (*aux++);
-                    }
-
-                    if (cordX - 1 >= 0)
-                    {
-                        aux = src + cordY * bitmapDataSrc.Stride + (cordX - 1) * pixelSize;
-                        b4 = (*aux++);
-                        g4 = (*aux++);
-                        r4 = (*aux++);
-                    }
-
-                    if (cordY + 1 < height && cordX - 1 >= 0)
-                    {
-                        aux = src + (cordY + 1) * bitmapDataSrc.Stride + (cordX - 1) * pixelSize;
-                        b5 = (*aux++);
-                        g5 = (*aux++);
-                        r5 = (*aux++);
-                    }
-
-                    if (cordY + 1 < height)
-                    {
-                        aux = src + (cordY + 1) * bitmapDataSrc.Stride + cordX * pixelSize;
-                        b6 = (*aux++);
-                        g6 = (*aux++);
-                        r6 = (*aux++);
-                    }
-
-                    if (cordY + 1 < height && cordX + 1 < width)
-                    {
-                        aux = src + (cordY + 1) * bitmapDataSrc.Stride + (cordX + 1) * pixelSize;
-                        b7 = (*aux++);
-                        g7 = (*aux++);
-                        r7 = (*aux++);
-                    }
-
-                    if (r0 >= 127 && g0 >= 127 && b0 >= 127)
-                    {
-                        dstAux = dst + cordY * bitmapDataDst.Stride + (cordX + 1) * pixelSize;
-                        *(dstAux++) = 0;
-                        *(dstAux++) = 0;
-                        *(dstAux++) = 0;
-                    }
-                    if (r1 >= 127 && g1 >= 127 && b1 >= 127)
-                    {
-                        dstAux = dst + (cordY - 1) * bitmapDataDst.Stride + (cordX + 1) * pixelSize;
-                        *(dstAux++) = 0;
-                        *(dstAux++) = 0;
-                        *(dstAux++) = 0;
-                    }
-                    if (r2 >= 127 && g2 >= 127 && b2 >= 127)
-                    {
-                        dstAux = dst + (cordY - 1) * bitmapDataDst.Stride + cordX * pixelSize;
-                        *(dstAux++) = 0;
-                        *(dstAux++) = 0;
-                        *(dstAux++) = 0;
-                    }
-                    if (r3 >= 127 && g3 >= 127 && b3 >= 127)
-                    {
-                        dstAux = dst + (cordY - 1) * bitmapDataDst.Stride + (cordX - 1) * pixelSize;
-                        *(dstAux++) = 0;
-                        *(dstAux++) = 0;
-                        *(dstAux++) = 0;
-                    }
-                    if (r4 >= 127 && g4 >= 127 && b4 >= 127)
-                    {
-                        dstAux = dst + cordY * bitmapDataDst.Stride + (cordX - 1) * pixelSize;
-                        *(dstAux++) = 0;
-                        *(dstAux++) = 0;
-                        *(dstAux++) = 0;
-                    }
-                    if (r5 >= 127 && g5 >= 127 && b5 >= 127)
-                    {
-                        dstAux = dst + (cordY + 1) * bitmapDataDst.Stride + (cordX - 1) * pixelSize;
-                        *(dstAux++) = 0;
-                        *(dstAux++) = 0;
-                        *(dstAux++) = 0;
-                    }
-                    if (r6 >= 127 && g6 >= 127 && b6 >= 127)
-                    {
-                        dstAux = dst + (cordY + 1) * bitmapDataDst.Stride + cordX * pixelSize;
-                        *(dstAux++) = 0;
-                        *(dstAux++) = 0;
-                        *(dstAux++) = 0;
-                    }
-                    if (r7 >= 127 && g7 >= 127 && b7 >= 127)
-                    {
-                        dstAux = dst + (cordY + 1) * bitmapDataDst.Stride + (cordX + 1) * pixelSize;
-                        *(dstAux++) = 0;
-                        *(dstAux++) = 0;
-                        *(dstAux++) = 0;
+                        *direcao = (indiceAnterior + 4) % 8;
+                        achou = true;
                     }
                 }
             }
+        }
 
-            //unlock imagem origem
+        public static unsafe void ContornoDMA(Bitmap imageBitmapSrc, Bitmap imageBitmapDest)
+        {
+            int width = imageBitmapSrc.Width;
+            int height = imageBitmapSrc.Height;
+            int pixelSize = 3;
+
+            //lock bits
+            BitmapData bitmapDataSrc = imageBitmapSrc.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            BitmapData bitmapDataDst = imageBitmapDest.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+            int stride = bitmapDataSrc.Stride;
+            int padding = stride - (width * pixelSize);
+
+            //fazer aqui os dois fors com o while do contorno
+            unsafe
+            {
+                byte* src = (byte*)bitmapDataSrc.Scan0.ToPointer(); //ponteiro para o (0,0) de fonte
+                byte* dst = (byte*)bitmapDataDst.Scan0.ToPointer(); //ponteiro para o (0,0) de destino
+                
+                //binarizar a entrada -> preto e branco
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        byte* srcBi = src + y*stride + x*pixelSize;
+                        if ((srcBi[0]+srcBi[1]+srcBi[2])/3 < 128) //preto
+                        {
+                            *(srcBi++) = 0;
+                            *(srcBi++) = 0;
+                            *(srcBi++) = 0;
+                        }
+                        else //branco
+                        {
+                            *(srcBi++) = 255;
+                            *(srcBi++) = 255;
+                            *(srcBi++) = 255;
+                        }
+                    }
+                }
+
+                //inicializar o destino -> deixar tudo branco
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        byte* dstInit = dst + y*stride + x*pixelSize;
+                        //branco
+                        *(dstInit++) = 255;
+                        *(dstInit++) = 255;
+                        *(dstInit++) = 255;
+                    }
+                }
+
+                //contorno
+                for (int y=0; y<height; y++)
+                {
+                    for(int x=0; x<width; x++)
+                    {
+                        byte* pixelAtual = src + y*stride + x*pixelSize;
+                        byte* direita = GetP(y, x+1, width, height, stride, pixelSize, src); //pega o pixel da direita
+                        if (IsBranco(pixelAtual) && direita!=null && IsPreto(direita) && !Marcado(pixelAtual))
+                        {
+                            byte* inicial = pixelAtual; //define o primeiro pixel do contorno
+                            byte* atualContorno = inicial; //define o pixel atual do contorno
+                            int xAtual = x, yAtual = y;
+                            int[] proximos = new int[2];
+                            int direcao = 4;
+                            do
+                            {
+                                MarcarPixel(atualContorno); //marcar o pixel atual como parte do contorno
+                                AcharPosicao(proximos, xAtual, yAtual, width, height, stride, pixelSize, src, &direcao); //achar o próximo pixel do contorno
+                                if (proximos[0]!=-1)
+                                {
+                                    xAtual = proximos[0]; //coluna
+                                    yAtual = proximos[1]; //linha
+                                    atualContorno = GetP(yAtual, xAtual, width, height, stride, pixelSize, src);
+                                }
+                                else
+                                {
+                                    atualContorno = inicial; //forçar a saída do laço
+                                }
+
+                            } while(atualContorno != inicial); //enquanto verdade o contorno precisa continuar
+                        }
+                    }
+                } //terminado esse laço eu tenho os meus contornos finalizados
+
+
+                //escrever os marcados na imagem de destino
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        if (Marcado(src)) //preto no destino
+                        {
+                            *(dst++) = 0; //blue -> b
+                            *(dst++) = 0; //green -> g
+                            *(dst++) = 0; //red -> r
+                        }
+                        else //branco no destino
+                        {
+                            *(dst++) = 255; //blue -> b
+                            *(dst++) = 255; //green -> g
+                            *(dst++) = 255; //red -> r
+                        }
+                        src += pixelSize;
+                    }
+                    src += padding;
+                    dst += padding;
+                } //imagem destino com apenas os contornos
+            }
+
             imageBitmapSrc.UnlockBits(bitmapDataSrc);
-            //unlock imagem destino
             imageBitmapDest.UnlockBits(bitmapDataDst);
         }
     }
