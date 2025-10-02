@@ -984,11 +984,6 @@ namespace ProcessamentoImagens
             imageDst.UnlockBits(bitmapDataDst);
         }
 
-
-
-
-
-
         //metodo para auxiliar no algoritmo de zhang suen
         private static unsafe int Conectividade(byte* p2, byte* p3, byte* p4, byte* p5, byte* p6, byte* p7, byte* p8, byte* p9)
         {
@@ -1280,7 +1275,29 @@ namespace ProcessamentoImagens
             return null;
         }
 
-        private static unsafe void AcharPosicao(int[] proximos, int xAtual, int yAtual, int width, int height, int stride, int pixelSize, byte* src, int* direcao)
+        private static unsafe bool Conectividade4(Point pontoAtual, Point ponto)
+        {
+            if (ponto.X - 1 == pontoAtual.X && ponto.Y == pontoAtual.Y) //está na minha DIREITA
+            {
+                return true;
+            }
+            if(ponto.X + 1 == pontoAtual.X && ponto.Y == pontoAtual.Y) //está na minha ESQUERDA
+            {
+                return true;
+            }
+            if(ponto.X == pontoAtual.X && ponto.Y + 1 == pontoAtual.Y) //está ACIMA de mim
+            {
+                return true;
+            }
+            if(ponto.X == pontoAtual.X && ponto.Y - 1 == pontoAtual.Y) //está ABAIXO de mim
+            {
+                return true;
+            }
+
+            return false; //se chegou aqui o ponto escolhido não é conectividade 4 com o meu atual
+        }
+
+        private static unsafe void AcharPosicao(int xAtual, int yAtual, int width, int height, int stride, int pixelSize, byte* src, int direcao, List<Point> pixels, List<int> direcoes)
         {
             //conectividade 8, pegar todos eles
             byte* p2 = GetP(yAtual-1, xAtual, width, height, stride, pixelSize, src); //acima
@@ -1291,56 +1308,92 @@ namespace ProcessamentoImagens
             byte* p5 = GetP(yAtual+1, xAtual-1, width, height, stride, pixelSize, src); //abaixo esquerda
             byte* p4 = GetP(yAtual, xAtual-1, width, height, stride, pixelSize, src); //esquerda
             byte* p3 = GetP(yAtual-1, xAtual-1, width, height, stride, pixelSize, src); //acima esquerda
-            proximos[0] = -1; proximos[1] = -1; //deixar como inválido inicialmente
-            byte*[] pixels = new byte*[8] { p0, p1, p2, p3, p4, p5, p6, p7 };
-            bool achou = false;
+            byte*[] pixelsVet = new byte*[8] { p0, p1, p2, p3, p4, p5, p6, p7 };
+            //bool achou = false;
+            byte* pixelAtual = src + yAtual*stride + xAtual*pixelSize;
 
-            for (int i=0; i<8 && !achou; i++)
+            for (int i=0; i<8; i++) //vou pegar todas as transições de branco para preto
             {
-                int indice = (*direcao + i + 1) % 8;
+                int indice = (direcao + i + 1) % 8;
 
-                if (pixels[indice]!=null && IsPreto(pixels[indice]))
+                if (pixelsVet[indice]!=null && IsPreto(pixelsVet[indice]))
                 {
                     int indiceAnterior = (indice + 7) % 8;
-                    if(pixels[indiceAnterior]!=null)
+                    if(pixelsVet[indiceAnterior]!=null && IsBranco(pixelsVet[indiceAnterior]))
                     {
+                        Point ponto = new Point();
                         switch (indiceAnterior)
                         {
                             case 0: //direita
-                                proximos[0] = xAtual + 1; //coluna
-                                proximos[1] = yAtual; //linha
+                                ponto.X = xAtual+1;
+                                ponto.Y = yAtual;
+                                //proximos[0] = xAtual + 1; //coluna
+                                //proximos[1] = yAtual; //linha
                                 break;
                             case 1: //acima direita
-                                proximos[0] = xAtual + 1; //coluna
-                                proximos[1] = yAtual - 1; //linha
+                                ponto.X = xAtual + 1;
+                                ponto.Y = yAtual - 1;
+                                //proximos[0] = xAtual + 1; //coluna
+                                //proximos[1] = yAtual - 1; //linha
                                 break;
                             case 2: //acima
-                                proximos[0] = xAtual; //coluna
-                                proximos[1] = yAtual - 1; //linha
+                                ponto.X = xAtual;
+                                ponto.Y = yAtual - 1;
+                                //proximos[0] = xAtual; //coluna
+                                //proximos[1] = yAtual - 1; //linha
                                 break;
                             case 3: //acima esquerda
-                                proximos[0] = xAtual - 1; //coluna
-                                proximos[1] = yAtual - 1; //linha
+                                ponto.X = xAtual - 1;
+                                ponto.Y = yAtual - 1;
+                                //proximos[0] = xAtual - 1; //coluna
+                                //proximos[1] = yAtual - 1; //linha
                                 break;
                             case 4: //esquerda
-                                proximos[0] = xAtual - 1; //coluna
-                                proximos[1] = yAtual; //linha
+                                ponto.X = xAtual - 1;
+                                ponto.Y = yAtual;
+                                //proximos[0] = xAtual - 1; //coluna
+                                //proximos[1] = yAtual; //linha
                                 break;
                             case 5: //abaixo esquerda
-                                proximos[0] = xAtual - 1; //coluna
-                                proximos[1] = yAtual + 1; //linha
+                                ponto.X = xAtual - 1;
+                                ponto.Y = yAtual + 1;
+                                //proximos[0] = xAtual - 1; //coluna
+                                //proximos[1] = yAtual + 1; //linha
                                 break;
                             case 6: //abaixo
-                                proximos[0] = xAtual; //coluna
-                                proximos[1] = yAtual + 1; //linha
+                                ponto.X = xAtual;
+                                ponto.Y = yAtual + 1;
+                                //proximos[0] = xAtual; //coluna
+                                //proximos[1] = yAtual + 1; //linha
                                 break;
                             case 7: //abaixo direita
-                                proximos[0] = xAtual + 1; //coluna
-                                proximos[1] = yAtual + 1; //linha
+                                ponto.X = xAtual + 1;
+                                ponto.Y = yAtual + 1;
+                                //proximos[0] = xAtual + 1; //coluna
+                                //proximos[1] = yAtual + 1; //linha
                                 break;
                         }
-                        *direcao = (indiceAnterior + 4) % 8;
-                        achou = true;
+                        Point pontoAtual = new Point();
+                        pontoAtual.X = xAtual;
+                        pontoAtual.Y = yAtual;
+                        if (Conectividade4(pontoAtual, ponto))
+                        {
+                            direcoes.Insert(0, (indiceAnterior + 4) % 8);//enpilhar direcao
+                            pixels.Insert(0, ponto); //empilhar ponto
+                        }
+                        else
+                        {
+                            int posAnt = (indiceAnterior + 7) % 8;
+                            int posProx = (indiceAnterior + 1) % 8;
+                            if ((pixelsVet[posAnt]!=null && IsBranco(pixelsVet[posAnt])) || (pixelsVet[posProx]!=null && IsBranco(pixelsVet[posProx]))) //verifico aqui se ele não passa nenhum limite de parede
+                            {
+                                direcoes.Insert(0, (indiceAnterior + 4) % 8);//enpilhar direcao
+                                pixels.Insert(0, ponto); //empilhar ponto
+                            }
+                        }
+                        
+                        //*direcao = (indiceAnterior + 4) % 8;
+                        //achou = true;
                     }
                 }
             }
@@ -1358,6 +1411,11 @@ namespace ProcessamentoImagens
 
             int stride = bitmapDataSrc.Stride;
             int padding = stride - (width * pixelSize);
+
+            List<int> direcoes = new List<int>(); //vai ser a minha pilha de direcoes
+            List<Point> pixels = new List<Point>(); //vai ser a minha pilha de pixels
+
+            int maxX, maxY, minX, minY;
 
             //fazer aqui os dois fors com o while do contorno
             unsafe
@@ -1411,16 +1469,30 @@ namespace ProcessamentoImagens
                             byte* inicial = pixelAtual; //define o primeiro pixel do contorno
                             byte* atualContorno = inicial; //define o pixel atual do contorno
                             int xAtual = x, yAtual = y;
-                            int[] proximos = new int[2];
+                            maxX = maxY = Int32.MinValue;
+                            minY = minX = Int32.MaxValue;
                             int direcao = 4;
                             do
                             {
                                 MarcarPixel(atualContorno); //marcar o pixel atual como parte do contorno
-                                AcharPosicao(proximos, xAtual, yAtual, width, height, stride, pixelSize, src, &direcao); //achar o próximo pixel do contorno
-                                if (proximos[0]!=-1)
+                                AcharPosicao(xAtual, yAtual, width, height, stride, pixelSize, src, direcao, pixels, direcoes); //achar o próximo pixel do contorno
+                                if (pixels.Count > 0) //tem informação na pilha
                                 {
-                                    xAtual = proximos[0]; //coluna
-                                    yAtual = proximos[1]; //linha
+                                    Point ponto = pixels[0]; //desemplilhando
+                                    direcao = direcoes[0]; //desempilhando
+                                    pixels.RemoveAt(0); //excluindo da pilha
+                                    direcoes.RemoveAt(0); //excluindo da pilha
+                                    xAtual = ponto.X; //coluna
+                                    yAtual = ponto.Y; //linha
+
+                                    if(xAtual > maxX)
+                                        maxX = xAtual;
+                                    if(xAtual < minX)
+                                        minX = xAtual;
+                                    if(yAtual > maxY)
+                                        maxY = yAtual;
+                                    if(yAtual < minY)
+                                        minY = yAtual;
                                     atualContorno = GetP(yAtual, xAtual, width, height, stride, pixelSize, src);
                                 }
                                 else
@@ -1428,7 +1500,23 @@ namespace ProcessamentoImagens
                                     atualContorno = inicial; //forçar a saída do laço
                                 }
 
-                            } while(atualContorno != inicial); //enquanto verdade o contorno precisa continuar
+                            } while(atualContorno!=inicial); //enquanto verdade o contorno precisa continuar
+
+                            //fazer o retângulo
+                            for(int y2=minY; y2<=maxY; y2++)
+                            {
+                                byte* linhaRet = dst + y2*stride + minX*pixelSize;
+                                MarcarPixel(linhaRet);
+                                linhaRet = dst + y2*stride + maxX*pixelSize;
+                                MarcarPixel(linhaRet);
+                            }
+                            for(int x2=minX; x2<=maxX; x2++)
+                            {
+                                byte* colunaRet = dst + minY*stride + x2*pixelSize;
+                                MarcarPixel(colunaRet);
+                                colunaRet = dst + maxY*stride + x2*pixelSize;
+                                MarcarPixel(colunaRet);
+                            }
                         }
                     }
                 } //terminado esse laço eu tenho os meus contornos finalizados
@@ -1439,17 +1527,21 @@ namespace ProcessamentoImagens
                 {
                     for (int x = 0; x < width; x++)
                     {
-                        if (Marcado(src)) //preto no destino
+                        if (Marcado(src) && !Marcado(dst)) //preto no destino
                         {
                             *(dst++) = 0; //blue -> b
                             *(dst++) = 0; //green -> g
                             *(dst++) = 0; //red -> r
                         }
-                        else //branco no destino
+                        else if(!Marcado(dst)) //branco no destino
                         {
                             *(dst++) = 255; //blue -> b
                             *(dst++) = 255; //green -> g
                             *(dst++) = 255; //red -> r
+                        }
+                        else
+                        {
+                            dst += pixelSize;
                         }
                         src += pixelSize;
                     }
