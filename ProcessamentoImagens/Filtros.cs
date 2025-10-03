@@ -585,6 +585,7 @@ namespace ProcessamentoImagens
             List<Point> pixels = new List<Point>(); //vai ser a minha pilha de pixels
 
             int maxX, maxY, minX, minY;
+            pontosRetangulo.Clear();
 
             //fazer aqui os dois fors com o while do contorno
             unsafe

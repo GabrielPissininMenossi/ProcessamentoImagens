@@ -28,8 +28,8 @@ namespace ProcessamentoImagens
             {
                 image = Image.FromFile(openFileDialog.FileName);
                 pictBoxImg1.Image = image;
-                pictBoxImg1.SizeMode = PictureBoxSizeMode.AutoSize;
-                pictBoxImg2.SizeMode = PictureBoxSizeMode.AutoSize;
+                pictBoxImg1.SizeMode = PictureBoxSizeMode.Zoom;
+                pictBoxImg2.SizeMode = PictureBoxSizeMode.Zoom;
             }
         }
 
@@ -48,6 +48,7 @@ namespace ProcessamentoImagens
             imageBitmap = new Bitmap(imgDest);
             pictBoxImg1.Image = imageBitmap; //para que o algoritmo do zhang suen já possa pegar a imagem correta
             pictBoxImg2.Image = imgDest;
+            pictBoxImg2.Image.Save("D:\\esqueleto.jpg");
         }
 
         //contorno countour following
@@ -57,6 +58,7 @@ namespace ProcessamentoImagens
             imageBitmap = (Bitmap)image;
             Filtros.ContornoDMA(imageBitmap, imgDest, pontosRetangulo);
             pictBoxImg2.Image = imgDest;
+            pictBoxImg2.Image.Save("D:\\contorno.png");
         }
 
         //retangulos com DMA
@@ -66,6 +68,7 @@ namespace ProcessamentoImagens
             imageBitmap = (Bitmap)image;
             Filtros.DesenharRetangulosDMA(imageBitmap, imgDest, pontosRetangulo);
             pictBoxImg2.Image = imgDest;
+            pictBoxImg2.Image.Save("D:\\retangulo.png");
         }
     }
 }
